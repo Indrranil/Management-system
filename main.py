@@ -1,3 +1,7 @@
+
+# import commands below download a few python libs 
+
+# streamlit as st for connviencnce
 import streamlit as st
 from streamlit import selectbox
 import pandas as pd
@@ -6,9 +10,22 @@ import sqlite3
 import os
 import random
 
+
+#sets up connection with the database
 conn = sqlite3.connect("drug_data.db", check_same_thread=False)
+
+# creates a cursor object to execute sql queries on the sqlite db
 c = conn.cursor()
 
+
+'''
+The following few functions contain the schema
+of our datebase, it is a good practice to keep
+the schemas in the scrpt itself to make it..
+-> modular
+-> simplified deployment
+-> Ease of testing
+'''
 
 def create_customer_table():
     c.execute('''CREATE TABLE IF NOT EXISTS Customers(
@@ -113,6 +130,12 @@ def view_order_data(customer_name):
 def view_all_order_data():
     return c.execute('SELECT * FROM Orders').fetchall()
 
+
+# st here refers to streamlit
+'''
+defines the main function for the admin 
+section of the system
+'''
 
 def admin():
     st.title("Pharmacy Database Dashboard")
