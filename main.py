@@ -217,12 +217,15 @@ def admin():
 
     elif choice == "About":
         st.subheader("DBMS Mini Project")
-        st.subheader("By Indrranil  (38), Eshan (41) & Tanish (47)")
+        st.subheader("By Indrranil  (38) & Eshan (41)")
 
 
+#1-> Retrives password from the given username[c_name]
 def authenticate(username, password):
     c.execute('SELECT C_Password FROM Customers WHERE C_Name = ?', (username,))
+   # Fetches result of the sql query, list of tuples(passwprds)
     cust_password = c.fetchall()
+   # Compares the pass retrived from db with the provided pass 
     return cust_password[0][0] == password
 
 
