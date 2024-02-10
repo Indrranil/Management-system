@@ -132,10 +132,10 @@ def view_all_order_data():
 
 
 # st here refers to streamlit
-'''
-defines the main function for the admin 
-section of the system
-'''
+# '''
+# defines the main function for the admin 
+# section of the system
+# '''
 
 def admin():
     st.title("Pharmacy Database Dashboard")
@@ -223,9 +223,9 @@ def admin():
 #1-> Retrives password from the given username[c_name]
 def authenticate(username, password):
     c.execute('SELECT C_Password FROM Customers WHERE C_Name = ?', (username,))
-   # Fetches result of the sql query, list of tuples(passwprds)
+# Fetches result of the sql query, list of tuples(passwprds)
     cust_password = c.fetchall()
-   # Compares the pass retrived from db with the provided pass 
+# Compares the pass retrived from db with the provided pass 
     return cust_password[0][0] == password
 
 
