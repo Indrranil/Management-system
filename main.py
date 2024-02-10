@@ -10,7 +10,7 @@ import sqlite3
 import os
 import random
 
-
+IMAGES_FOLDER = "images"
 #sets up connection with the database
 conn = sqlite3.connect("drug_data.db", check_same_thread=False)
 
@@ -80,16 +80,17 @@ def create_drug_table():
                 D_ExpDate DATE NOT NULL,
                 D_Use VARCHAR(50) NOT NULL,
                 D_Qty INT NOT NULL,
-                D_id INT PRIMARY KEY NOT NULL)
+                D_id INT PRIMARY KEY NOT NULL,
+                D_Image_Path VARCHAR(255))
                 ''')
     print('Drug Table created successfully')
 
 
-def add_drug_data(Dname, Dexpdate, Duse, Dqty, Did):
+def add_drug_data(Dname, Dexpdate, Duse, Dqty, Did, image_path):
     c.execute('''INSERT INTO Drugs
-                 (D_Name, D_Expdate, D_Use, D_Qty, D_id)
+                 (D_Name, D_Expdate, D_Use, D_Qty, D_id,D_image_path)
                  VALUES (?, ?, ?, ?, ?)''',
-              (Dname, Dexpdate, Duse, Dqty, Did))
+              (Dname, Dexpdate, Duse, Dqty, Did, image_path))
     conn.commit()
 
 
@@ -147,7 +148,7 @@ def admin():
         if choice == "Add":
             st.subheader("Add Drugs")
 
-            col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns(3)
             with col1:
                 drug_name = st.text_area("Enter the Drug Name")
                 drug_expiry = st.date_input("Expiry Date of Drug (YYYY-MM-DD)")
@@ -155,9 +156,17 @@ def admin():
             with col2:
                 drug_quantity = st.text_area("Enter the quantity")
                 drug_id = st.text_area("Enter the Drug id (example:#D1)")
-
+            with col3:
+                uploaded_image = st.file_uploader("Upload Drug Image", type=['png', 'jpg', 'jpeg'])
             if st.button("Add Drug"):
-                add_drug_data(drug_name, drug_expiry, drug_mainuse, drug_quantity, drug_id)
+                if uploaded_image:
+                    image_path = os.path.join(IMAGES_FOLDER, f"{drug_id}_{drug_name}.jpg")
+                    with open(image_path, "wb") as f:
+                        f.write(uploaded_image.read())
+                else:
+                    image_path = None
+                    
+                add_drug_data(drug_name, drug_expiry, drug_mainuse, drug_quantity, drug_id,image_path)
                 st.success("Successfully Added Data")
 
         if choice == "View":
