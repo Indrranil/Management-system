@@ -18,14 +18,14 @@ conn = sqlite3.connect("drug_data.db", check_same_thread=False)
 c = conn.cursor()
 
 
-'''
-The following few functions contain the schema
-of our datebase, it is a good practice to keep
-the schemas in the scrpt itself to make it..
--> modular
--> simplified deployment
--> Ease of testing
-'''
+# '''
+# The following few functions contain the schema
+# of our datebase, it is a good practice to keep
+# the schemas in the scrpt itself to make it..
+# -> modular
+# -> simplified deployment
+# -> Ease of testing
+# '''
 
 def create_customer_table():
     c.execute('''CREATE TABLE IF NOT EXISTS Customers(
