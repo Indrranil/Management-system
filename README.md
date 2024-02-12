@@ -1,6 +1,6 @@
 # Pharmacy Management System
 
-### Mini Project for Database Management Systems, backend in python (PANEL A)
+### Python
 
 Members:
 - Indrranil Pawar (1032222765)
