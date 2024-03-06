@@ -9,6 +9,11 @@ from PIL import Image
 import sqlite3
 import os
 import random
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+
 
 IMAGES_FOLDER = "images"
 #sets up connection with the database
@@ -39,10 +44,19 @@ def create_customer_table():
 
 
 def add_customer_data(Cname, Cpass, Cemail, Cstate, Cnumber):
-    c.execute('''INSERT INTO Customers (
-        C_Name, C_Password, C_Email, C_State, C_Number
-        ) VALUES (?, ?, ?, ?, ?)''', (Cname, Cpass, Cemail, Cstate, Cnumber))
+    try:
+        c.execute('''INSERT INTO Customers (C_Name, C_Password, C_Email, C_State, C_Number)
+                     VALUES (?, ?, ?, ?, ?)''', (Cname, Cpass, Cemail, Cstate, Cnumber))
+        conn.commit()
+        send_welcome_email(Cemail)
+        st.success("Account Created!")
+        st.info("Go to the Login Menu to login")
+    except sqlite3.Error as e:
+        conn.rollback()
+        st.error(f"Error inserting data into the database: {e}")
+
     conn.commit()
+    send_welcome_email(Cemail)
 
 
 def view_all_customer_data():
@@ -130,6 +144,38 @@ def view_order_data(customer_name):
 
 def view_all_order_data():
     return c.execute('SELECT * FROM Orders').fetchall()
+
+
+#email notificatin code
+
+def send_email_notification(recipient, subject, message):
+    sender_email = "indrranil7@gmail.com"
+    sender_password = "ipkj abkl wskt obuh"
+    smtp_server = "smtp.gmail.com"
+    
+   # creating the message
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = recipient
+    msg['Subject'] = subject
+    
+  # attach the message body
+    msg.attach(MIMEText(message, 'plain'))
+    
+#setting up the smtp connection 
+
+    with smtplib.SMTP(smtp_server, 587) as server:
+        server.starttls()
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, recipient, msg.as_string())
+
+def send_welcome_email(customer_email):
+    subject = "Welcome to our Pharmacy Store"
+    message_body = f"Dear {customer_email},\n\n\nWelcome to our Pharmacy Store. We are glad to have you on board. We hope you have a great experience with us.\n"
+            
+    send_email_notification(customer_email, subject, message_body)
+
+
 
 
 # st here refers to streamlit
@@ -269,7 +315,6 @@ def customer(username, password):
         st.image(img, width=100, caption="Rs. 65/-")
         vicks = st.slider(label="Quantity", min_value=0, max_value=5, key=3)
         st.info(f"When to USE: {drug_result[2][2]}")
-
         if st.button(label="Buy now"):
             O_items = ""
 
@@ -326,3 +371,26 @@ if __name__ == '__main__':
         password = st.sidebar.text_input("Password", type='password')
         if username == 'admin' and password == 'admin':
             admin()
+
+
+page_bg_img = """
+<style>
+[data-testid="stAppViewContainer"]{
+background-color: #3e5162;
+opacity: 0.7;
+background-image:  radial-gradient(#0020ff 2px, transparent 2px), radial-gradient(#0020ff 2px, #3e5162 2px);
+background-size: 80px 80px;
+background-position: 0 0,40px 40px;
+}
+[data-testid="stSidebar"]{
+    background-color: #3e5162;
+opacity: 0.7;
+background-image:  radial-gradient(#0020ff 2px, transparent 2px), radial-gradient(#0020ff 2px, #3e5162 2px);
+background-size: 80px 80px;
+background-position: 0 0,40px 40px;
+    
+}
+</style>
+
+"""
+st.markdown(page_bg_img, unsafe_allow_html=True)
