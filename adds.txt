@@ -1,0 +1,5 @@
+1. add value to items
+2. sales stats -> Matplotlib and Seaborn
+3. payment gateway
+4. notification integration -> smtplib
+5. new ui for the current streamlit app 
