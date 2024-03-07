@@ -3,3 +3,4 @@
 3. payment gateway
 4. notification integration -> smtplib
 5. new ui for the current streamlit app 
+6. add search for drugs.
