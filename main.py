@@ -94,17 +94,18 @@ def create_drug_table():
                 D_ExpDate DATE NOT NULL,
                 D_Use VARCHAR(50) NOT NULL,
                 D_Qty INT NOT NULL,
+                D_Price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
                 D_id INT PRIMARY KEY NOT NULL,
                 D_Image_Path VARCHAR(255))
                 ''')
     print('Drug Table created successfully')
 
 
-def add_drug_data(Dname, Dexpdate, Duse, Dqty, Did, image_path):
+def add_drug_data(Dname, Dexpdate, Duse, Dqty, DPrice, Did, image_path):
     c.execute('''INSERT INTO Drugs
-                 (D_Name, D_Expdate, D_Use, D_Qty, D_id,D_image_path)
-                 VALUES (?, ?, ?, ?, ?)''',
-              (Dname, Dexpdate, Duse, Dqty, Did, image_path))
+                 (D_Name, D_Expdate, D_Use, D_Qty,D_Price, D_id,D_image_path)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)''',
+              (Dname, Dexpdate, Duse, Dqty, Dprice , Did, image_path))
     conn.commit()
 
 
@@ -118,6 +119,7 @@ def create_order_table():
                 O_Name VARCHAR(100) NOT NULL,
                 O_Items VARCHAR(100) NOT NULL,
                 O_Qty VARCHAR(100) NOT NULL,
+                O_TotalPrice DECIMAL(10,2) NOT NULL DEFAULT 0.00,
                 O_id VARCHAR(100) PRIMARY KEY NOT NULL)
     ''')
 
@@ -125,14 +127,28 @@ def create_order_table():
 def delete_order(Oid):
     c.execute(''' DELETE FROM Orders WHERE O_id = ?''', (Oid,))
     conn.commit()
+    
+def fetch_drug_price(drug_name):
+    result = c.execute('SELECT D_Price FROM Drugs WHERE D_Name = ?', (drug_name,)).fetchone()
+    return result[0] if result else 0.00
+
+def calculate_total_price(items, quantities):
+    item_list = items.split(',')
+    qty_list = quantities.split(',')
+    prices = [fetch_drug_price(item) for item in item_list]
+    total_price = sum([float(price) * int(qty) for price, qty in zip(prices, qty_list)])
+    return total_price 
 
 
-def add_order_data(O_Name, O_Items, O_Qty, O_id):
+
+
+def add_order_data(O_Name, O_Items, O_Qty, O_TotalPrice, O_id):
     c.execute('''
-        INSERT INTO Orders (O_Name, O_Items, O_Qty, O_id)
-        VALUES (?, ?, ?, ?)
-    ''', (O_Name, O_Items, O_Qty, O_id))
+        INSERT INTO Orders (O_Name, O_Items, O_Qty, O_TotalPrice, O_id)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (O_Name, O_Items, O_Qty, O_TotalPrice, O_id))
     conn.commit()
+
 
 
 def view_order_data(customer_name):
@@ -201,6 +217,7 @@ def admin():
                 drug_mainuse = st.text_area("When to Use")
             with col2:
                 drug_quantity = st.text_area("Enter the quantity")
+                drug_price = st.text_area("Enter the price")
                 drug_id = st.text_area("Enter the Drug id (example:#D1)")
             with col3:
                 uploaded_image = st.file_uploader("Upload Drug Image", type=['png', 'jpg', 'jpeg'])
@@ -212,7 +229,7 @@ def admin():
                 else:
                     image_path = None
                     
-                add_drug_data(drug_name, drug_expiry, drug_mainuse, drug_quantity, drug_id,image_path)
+                add_drug_data(drug_name, drug_expiry, drug_mainuse, drug_quantity,drug_price, drug_id,image_path)
                 st.success("Successfully Added Data")
 
         if choice == "View":
@@ -291,7 +308,7 @@ def customer(username, password):
         order_result = view_order_data(username)
 
         with st.expander("View All Order Data"):
-            order_clean_df = pd.DataFrame(order_result, columns=["Name", "Items", "Qty", "ID"])
+            order_clean_df = pd.DataFrame(order_result, columns=["Name", "Items", "Qty", "Price", "ID"])    '''define price in each drug below '''
             st.dataframe(order_clean_df)
 
         drug_result = view_all_drug_data()
@@ -326,8 +343,12 @@ def customer(username, password):
                 O_items += "Vicks"
             O_Qty = f"{dolo650},{strepsils},{vicks}"
 
+
+            #cal;culates the total price of the order
+            O_TotalPrice = calculate_total_price(O_items, O_Qty)
+            
             O_id = f"{username}#O{random.randint(0, 1000000)}"
-            add_order_data(username, O_items, O_Qty, O_id)
+            add_order_data(username, O_items, O_Qty, O_TotalPrice, O_id)
 
 
 if __name__ == '__main__':
