@@ -1,7 +1,5 @@
 # Pharmacy Management System
 
-### Python
-
 ## PROBLEM STATEMENT
 - In this era of growing demands of pharmaceutical and chemical products for health and medicine; every medical store, be it a small of medium sized businesses are running rampant towards efficient store management and rapid revenue computation. 
 - Instead of using the conventional style of paper-based records and documentation, electronic methods are preferred for stock maintenance, automatic updation of records while billing and reliable electronic documentation.
