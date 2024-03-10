@@ -288,8 +288,8 @@ def admin():
                 st.dataframe(order_clean_df)
 
     elif choice == "About":
-        st.subheader("DBMS Mini Project")
-        st.subheader("By Indrranil  (38) & Eshan (41)")
+        st.subheader("Python Project")
+        st.subheader("By Indrranil ")
 
 
 #1-> Retrives password from the given username[c_name]
@@ -346,6 +346,8 @@ def customer(username, password):
 
             #cal;culates the total price of the order
             O_TotalPrice = calculate_total_price(O_items, O_Qty)
+            
+            st.success(f"Total Price: Rs. {O_TotalPrice:.2f}")
             
             O_id = f"{username}#O{random.randint(0, 1000000)}"
             add_order_data(username, O_items, O_Qty, O_TotalPrice, O_id)
