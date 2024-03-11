@@ -229,14 +229,14 @@ def admin():
                 else:
                     image_path = None
                     
-                add_drug_data(drug_name, drug_expiry, drug_mainuse, drug_quantity,drug_price, drug_id,image_path)
+                add_drug_data(drug_name, drug_expiry, drug_mainuse, drug_quantity, drug_id,drug_price,image_path)
                 st.success("Successfully Added Data")
 
         if choice == "View":
             st.subheader("Drug Details")
             drug_result = view_all_drug_data()
             with st.expander("View All Drug Data"):
-                drug_clean_df = pd.DataFrame(drug_result, columns=["Name", "Expiry Date", "Use", "Quantity", "ID"])
+                drug_clean_df = pd.DataFrame(drug_result, columns=["Name", "Expiry_Date", "Use", "Quantity", "ID", "Price"])
                 st.dataframe(drug_clean_df)
 
             with st.expander("View Drug Quantity"):
@@ -315,21 +315,21 @@ def customer(username, password):
         st.subheader(f"Drug: {drug_result[0][0]}")
         img_path = os.path.join(os.path.dirname(__file__), 'images/dolo650.jpeg')
         img = Image.open(img_path)
-        st.image(img, width=100, caption="Rs. 15/-")
+        st.image(img, width=100, caption=f"Rs. {fetch_drug_price(drug_result[0][0]):.2f}/-")
         dolo650 = st.slider(label="Quantity", min_value=0, max_value=5, key=1)
         st.info(f"When to USE: {drug_result[0][2]}")
 
         st.subheader(f"Drug: {drug_result[1][0]}")
         img_path = os.path.join(os.path.dirname(__file__), 'images/strepsils.jpeg')
         img = Image.open(img_path)
-        st.image(img, width=100, caption="Rs. 10/-")
+        st.image(img, width=100, caption=f"Rs. {fetch_drug_price(drug_result[1][0]):.2f}/-")
         strepsils = st.slider(label="Quantity", min_value=0, max_value=5, key=2)
         st.info(f"When to USE: {drug_result[1][2]}")
 
         st.subheader(f"Drug: {drug_result[2][0]}")
         img_path = os.path.join(os.path.dirname(__file__), 'images/vicks.jpeg')
         img = Image.open(img_path)
-        st.image(img, width=100, caption="Rs. 65/-")
+        st.image(img, width=100, caption=f"Rs. {fetch_drug_price(drug_result[2][0]):.2f}/-")
         vicks = st.slider(label="Quantity", min_value=0, max_value=5, key=3)
         st.info(f"When to USE: {drug_result[2][2]}")
         if st.button(label="Buy now"):
@@ -350,7 +350,7 @@ def customer(username, password):
             st.success(f"Total Price: Rs. {O_TotalPrice:.2f}")
             
             O_id = f"{username}#O{random.randint(0, 1000000)}"
-            add_order_data(username, O_items, O_Qty, O_TotalPrice, O_id)
+            add_order_data(username, O_items, O_Qty , O_TotalPrice,O_id)
 
 
 if __name__ == '__main__':
