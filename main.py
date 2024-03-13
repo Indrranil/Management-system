@@ -103,9 +103,9 @@ def create_drug_table():
 
 def add_drug_data(Dname, Dexpdate, Duse, Dqty, DPrice, Did, image_path):
     c.execute('''INSERT INTO Drugs
-                 (D_Name, D_Expdate, D_Use, D_Qty,D_Price, D_id,D_image_path)
+                 (D_Name, D_Expdate, D_Use, D_Qty, D_Price, D_id,D_image_path)
                  VALUES (?, ?, ?, ?, ?, ?, ?)''',
-              (Dname, Dexpdate, Duse, Dqty, Dprice , Did, image_path))
+              (Dname, Dexpdate, Duse, Dqty, DPrice, Did, image_path))
     conn.commit()
 
 
@@ -124,20 +124,31 @@ def create_order_table():
     ''')
 
 
+
 def delete_order(Oid):
     c.execute(''' DELETE FROM Orders WHERE O_id = ?''', (Oid,))
     conn.commit()
-    
+
+
 def fetch_drug_price(drug_name):
-    result = c.execute('SELECT D_Price FROM Drugs WHERE D_Name = ?', (drug_name,)).fetchone()
+    print("Fetching price for drug:", drug_name)  # Add this line to check the drug name
+    result = c.execute(
+        'SELECT D_Price FROM Drugs WHERE D_Name = ?',
+        (drug_name,)
+    ).fetchone()
+    print("Result from database:", result)  # Add this line to check the result from the database
     return result[0] if result else 0.00
+
+
+
+
 
 def calculate_total_price(items, quantities):
     item_list = items.split(',')
     qty_list = quantities.split(',')
     prices = [fetch_drug_price(item) for item in item_list]
     total_price = sum([float(price) * int(qty) for price, qty in zip(prices, qty_list)])
-    return total_price 
+    return total_price
 
 
 
@@ -146,7 +157,7 @@ def add_order_data(O_Name, O_Items, O_Qty, O_TotalPrice, O_id):
     c.execute('''
         INSERT INTO Orders (O_Name, O_Items, O_Qty, O_TotalPrice, O_id)
         VALUES (?, ?, ?, ?, ?)
-    ''', (O_Name, O_Items, O_Qty, O_TotalPrice, O_id))
+        ''', (O_Name, O_Items, O_Qty, O_TotalPrice, O_id))
     conn.commit()
 
 
@@ -301,6 +312,10 @@ def authenticate(username, password):
     return cust_password[0][0] == password
 
 
+
+
+# match O_items names 
+
 def customer(username, password):
     if authenticate(username, password):
         st.title("Welcome to Pharmacy Store")
@@ -336,21 +351,21 @@ def customer(username, password):
             O_items = ""
 
             if dolo650 > 0:
-                O_items += "Dolo-650,"
+                O_items += "Dolo 650,"
             if strepsils > 0:
-                O_items += "Strepsils,"
+                O_items += "Strapsils,"
             if vicks > 0:
-                O_items += "Vicks"
+                O_items += "Vicks VaporRub"
             O_Qty = f"{dolo650},{strepsils},{vicks}"
 
 
             #cal;culates the total price of the order
-            O_TotalPrice = calculate_total_price(O_items, O_Qty)
+            O_TotalPrice = calculate_total_price( O_items, O_Qty)
             
             st.success(f"Total Price: Rs. {O_TotalPrice:.2f}")
             
             O_id = f"{username}#O{random.randint(0, 1000000)}"
-            add_order_data(username, O_items, O_Qty , O_TotalPrice,O_id)
+            add_order_data(username, O_items,  O_Qty, O_TotalPrice, O_id)
 
 
 if __name__ == '__main__':
@@ -417,3 +432,6 @@ background-position: 0 0,40px 40px;
 
 """
 st.markdown(page_bg_img, unsafe_allow_html=True)
+
+
+# demo commnet
