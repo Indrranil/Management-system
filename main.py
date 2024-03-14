@@ -323,7 +323,7 @@ def customer(username, password):
         order_result = view_order_data(username)
 
         with st.expander("View All Order Data"):
-            order_clean_df = pd.DataFrame(order_result, columns=["Name", "Items", "Qty", "Price", "ID"])    #define price in each drug below 
+            order_clean_df = pd.DataFrame(order_result, columns=["Name", "Items", "Qty", "ID", "Price"])    #define price in each drug below 
             st.dataframe(order_clean_df)
 
         drug_result = view_all_drug_data()
