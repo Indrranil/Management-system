@@ -15,7 +15,8 @@ from email.mime.multipart import MIMEMultipart
 
 
 
-IMAGES_FOLDER = "images"
+##IMAGES_FOLDER = "images"
+
 #sets up connection with the database
 conn = sqlite3.connect("drug_data.db", check_same_thread=False)
 
@@ -212,6 +213,7 @@ def send_welcome_email(customer_email):
 # '''
 
 def admin():
+    IMAGES_FOLDER = "images" 
     st.title("Pharmacy Database Dashboard")
     menu = ["Drugs", "Customers", "Orders", "About"]
     choice = st.sidebar.selectbox("Menu", menu)
@@ -295,7 +297,7 @@ def admin():
             st.subheader("Order Details")
             order_result = view_all_order_data()
             with st.expander("View All Order Data"):
-                order_clean_df = pd.DataFrame(order_result, columns=["Name", "Items", "Qty", "ID"])
+                order_clean_df = pd.DataFrame(order_result, columns=["Name", "Items", "Qty", "ID","Price"])
                 st.dataframe(order_clean_df)
 
     elif choice == "About":
