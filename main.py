@@ -1,5 +1,5 @@
 
-# import commands below download a few python libs 
+# import commands below download a few python libs
 
 # streamlit as st for connviencnce
 import streamlit as st
@@ -12,12 +12,17 @@ import random
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from st_paywall import add_auth
+import stripe
+import streamlit.components.v1 as components
+
+stripe.api_key = "rk_test_51OubhsSAkfFPs5lW1kTN2pCiRh2Yzl43i3hcuiXdtyDzuC38VZVekNJwTIiCRdHQXITJhMDtKm3FFqZlMzkbWHse00GmRSOVYk"
+##stripe.SetupIntent.create(usage="on_session")
 
 
+# IMAGES_FOLDER = "images"
 
-##IMAGES_FOLDER = "images"
-
-#sets up connection with the database
+# sets up connection with the database
 conn = sqlite3.connect("drug_data.db", check_same_thread=False)
 
 # creates a cursor object to execute sql queries on the sqlite db
@@ -125,23 +130,21 @@ def create_order_table():
     ''')
 
 
-
 def delete_order(Oid):
     c.execute(''' DELETE FROM Orders WHERE O_id = ?''', (Oid,))
     conn.commit()
 
 
 def fetch_drug_price(drug_name):
-    print("Fetching price for drug:", drug_name)  # Add this line to check the drug name
+    # Add this line to check the drug name
+    print("Fetching price for drug:", drug_name)
     result = c.execute(
         'SELECT D_Price FROM Drugs WHERE D_Name = ?',
         (drug_name,)
     ).fetchone()
-    print("Result from database:", result)  # Add this line to check the result from the database
+    # Add this line to check the result from the database
+    print("Result from database:", result)
     return result[0] if result else 0.00
-
-
-
 
 
 def calculate_total_price(items, quantities):
@@ -152,15 +155,12 @@ def calculate_total_price(items, quantities):
     return total_price
 
 
-
-
 def add_order_data(O_Name, O_Items, O_Qty, O_TotalPrice, O_id):
     c.execute('''
         INSERT INTO Orders (O_Name, O_Items, O_Qty, O_TotalPrice, O_id)
         VALUES (?, ?, ?, ?, ?)
         ''', (O_Name, O_Items, O_Qty, O_TotalPrice, O_id))
     conn.commit()
-
 
 
 def view_order_data(customer_name):
@@ -174,52 +174,53 @@ def view_all_order_data():
     return c.execute('SELECT * FROM Orders').fetchall()
 
 
-#email notificatin code
+# email notificatin code
 
 def send_email_notification(recipient, subject, message):
     sender_email = "indrranil7@gmail.com"
     sender_password = "ipkj abkl wskt obuh"
     smtp_server = "smtp.gmail.com"
-    
+
    # creating the message
     msg = MIMEMultipart()
     msg['From'] = sender_email
     msg['To'] = recipient
     msg['Subject'] = subject
-    
+
   # attach the message body
     msg.attach(MIMEText(message, 'plain'))
-    
-#setting up the smtp connection 
+
+# setting up the smtp connection
 
     with smtplib.SMTP(smtp_server, 587) as server:
         server.starttls()
         server.login(sender_email, sender_password)
         server.sendmail(sender_email, recipient, msg.as_string())
 
+
 def send_welcome_email(customer_email):
     subject = "Welcome to our Pharmacy Store"
     message_body = f"Dear {customer_email},\n\n\nWelcome to our Pharmacy Store. We are glad to have you on board. We hope you have a great experience with us.\n"
-            
-    send_email_notification(customer_email, subject, message_body)
 
+    send_email_notification(customer_email, subject, message_body)
 
 
 
 # st here refers to streamlit
 # '''
-# defines the main function for the admin 
+# defines the main function for the admin
 # section of the system
 # '''
 
 def admin():
-    IMAGES_FOLDER = "images" 
+    IMAGES_FOLDER = "images"
     st.title("Pharmacy Database Dashboard")
     menu = ["Drugs", "Customers", "Orders", "About"]
     choice = st.sidebar.selectbox("Menu", menu)
 
     if choice == "Drugs":
-        choice = st.sidebar.selectbox("Menu", ["Add", "View", "Update", "Delete"])
+        choice = st.sidebar.selectbox(
+            "Menu", ["Add", "View", "Update", "Delete"])
         if choice == "Add":
             st.subheader("Add Drugs")
 
@@ -233,23 +234,26 @@ def admin():
                 drug_price = st.text_area("Enter the price")
                 drug_id = st.text_area("Enter the Drug id (example:#D1)")
             with col3:
-                uploaded_image = st.file_uploader("Upload Drug Image", type=['png', 'jpg', 'jpeg'])
+                uploaded_image = st.file_uploader(
+                    "Upload Drug Image", type=['png', 'jpg', 'jpeg'])
             if st.button("Add Drug"):
                 if uploaded_image:
-                    image_path = os.path.join(IMAGES_FOLDER, f"{drug_id}_{drug_name}.jpg")
+                    image_path = os.path.join(
+                        IMAGES_FOLDER, f"{drug_id}_{drug_name}.jpg")
                     with open(image_path, "wb") as f:
                         f.write(uploaded_image.read())
                 else:
                     image_path = None
-                    
-                add_drug_data(drug_name, drug_expiry, drug_mainuse, drug_quantity, drug_id,drug_price,image_path)
+
+                add_drug_data(drug_name, drug_expiry, drug_mainuse,  drug_quantity, drug_id, drug_price, image_path)
                 st.success("Successfully Added Data")
 
         if choice == "View":
             st.subheader("Drug Details")
             drug_result = view_all_drug_data()
             with st.expander("View All Drug Data"):
-                drug_clean_df = pd.DataFrame(drug_result, columns=["Name", "Expiry_Date", "Use", "Quantity", "ID", "Price"])
+                drug_clean_df = pd.DataFrame(
+                    drug_result, columns=["Name", "Expiry_Date", "Use", "Quantity", "ID", "Price"])
                 st.dataframe(drug_clean_df)
 
             with st.expander("View Drug Quantity"):
@@ -275,7 +279,8 @@ def admin():
             st.subheader("Customer Details")
             cust_result = view_all_customer_data()
             with st.expander("View All Customer Data"):
-                cust_clean_df = pd.DataFrame(cust_result, columns=["Name", "Password", "Email-ID", "Area", "Number"])
+                cust_clean_df = pd.DataFrame(
+                    cust_result, columns=["Name", "Password", "Email-ID", "Area", "Number"])
                 st.dataframe(cust_clean_df)
 
         if choice == 'Update':
@@ -297,7 +302,8 @@ def admin():
             st.subheader("Order Details")
             order_result = view_all_order_data()
             with st.expander("View All Order Data"):
-                order_clean_df = pd.DataFrame(order_result, columns=["Name", "Items", "Qty", "ID","Price"])
+                order_clean_df = pd.DataFrame(
+                    order_result, columns=["Name", "Items", "Qty", "ID", "Price"])
                 st.dataframe(order_clean_df)
 
     elif choice == "About":
@@ -305,18 +311,58 @@ def admin():
         st.subheader("By Indrranil ")
 
 
-#1-> Retrives password from the given username[c_name]
+# 1-> Retrives password from the given username[c_name]
 def authenticate(username, password):
     c.execute('SELECT C_Password FROM Customers WHERE C_Name = ?', (username,))
 # Fetches result of the sql query, list of tuples(passwprds)
     cust_password = c.fetchall()
-# Compares the pass retrived from db with the provided pass 
+# Compares the pass retrived from db with the provided pass
     return cust_password[0][0] == password
 
+def checkout(username, O_TotalPrice):
+    try:
+        # Create a PaymentIntent to initiate the payment process
+        intent = stripe.PaymentIntent.create(
+            amount=int(O_TotalPrice * 100),  # Amount in cents
+            currency="inr",
+            description="Pharmacy Order",
+            metadata={"order_id": username},
+        )
+        # Redirect the user to the Stripe payment page
+        st.markdown("**Redirecting to Stripe payment page...**")
+        st.write(f"**Amount: Rs. {O_TotalPrice:.2f}**")
+        st.markdown(f"**PaymentIntent Client Secret:** {intent.client_secret}")
+        html_redirect = f"""
+        <script type="text/javascript">
+        window.location.href = "https://checkout.stripe.com/pay/{intent.client_secret}";
+        </script>
+        """
+        components.html(html_redirect)
+    except stripe.error.StripeError as e:
+        st.error(f"Error processing payment: {e}")
+        
+        
+def retrive_password(username):
+    c.execute("SELECT  C_Password FROM Customers WHERE C_Name = ?", (username,))
+    result = c.fetchone()
+    if result:
+        return result[0]
+    else:
+        return None 
+    
+def forgot_password(username):
+    st.subheader("Forgot Password")
+    username = st.text_input("User Name")
+    if st.tk.Button("Retrieve Button"):
+        password = retrive_password(username)
+        if password:
+            st.success(f"Your password is {password}")
+        else:
+            st.error("No such user exists in the database. Please check the username and try again.")
+        
 
 
-
-# match O_items names 
+# match O_items names
 
 def customer(username, password):
     if authenticate(username, password):
@@ -325,30 +371,35 @@ def customer(username, password):
         order_result = view_order_data(username)
 
         with st.expander("View All Order Data"):
-            order_clean_df = pd.DataFrame(order_result, columns=["Name", "Items", "Qty", "ID", "Price"])    #define price in each drug below 
+            order_clean_df = pd.DataFrame(order_result, columns=[ "Name", "Items", "Qty", "ID", "Price"])  # define price in each drug below
             st.dataframe(order_clean_df)
 
         drug_result = view_all_drug_data()
         st.subheader(f"Drug: {drug_result[0][0]}")
-        img_path = os.path.join(os.path.dirname(__file__), 'images/dolo650.jpeg')
+        img_path = os.path.join(os.path.dirname(
+            __file__), 'images/dolo650.jpeg')
         img = Image.open(img_path)
         st.image(img, width=100, caption=f"Rs. {fetch_drug_price(drug_result[0][0]):.2f}/-")
         dolo650 = st.slider(label="Quantity", min_value=0, max_value=5, key=1)
         st.info(f"When to USE: {drug_result[0][2]}")
 
         st.subheader(f"Drug: {drug_result[1][0]}")
-        img_path = os.path.join(os.path.dirname(__file__), 'images/strepsils.jpeg')
+        img_path = os.path.join(os.path.dirname(
+            __file__), 'images/strepsils.jpeg')
         img = Image.open(img_path)
         st.image(img, width=100, caption=f"Rs. {fetch_drug_price(drug_result[1][0]):.2f}/-")
-        strepsils = st.slider(label="Quantity", min_value=0, max_value=5, key=2)
+        strepsils = st.slider(
+            label="Quantity", min_value=0, max_value=5, key=2)
         st.info(f"When to USE: {drug_result[1][2]}")
 
         st.subheader(f"Drug: {drug_result[2][0]}")
         img_path = os.path.join(os.path.dirname(__file__), 'images/vicks.jpeg')
         img = Image.open(img_path)
-        st.image(img, width=100, caption=f"Rs. {fetch_drug_price(drug_result[2][0]):.2f}/-")
+        st.image(img, width=100, caption=f"Rs. { fetch_drug_price(drug_result[2][0]):.2f}/-")
         vicks = st.slider(label="Quantity", min_value=0, max_value=5, key=3)
         st.info(f"When to USE: {drug_result[2][2]}")
+        O_TotalPrice = 0
+        O_id = "" 
         if st.button(label="Buy now"):
             O_items = ""
 
@@ -360,14 +411,19 @@ def customer(username, password):
                 O_items += "Vicks VaporRub"
             O_Qty = f"{dolo650},{strepsils},{vicks}"
 
+            # cal;culates the total price of the order
+            O_TotalPrice = calculate_total_price(O_items, O_Qty)
 
-            #cal;culates the total price of the order
-            O_TotalPrice = calculate_total_price( O_items, O_Qty)
-            
             st.success(f"Total Price: Rs. {O_TotalPrice:.2f}")
-            
+
             O_id = f"{username}#O{random.randint(0, 1000000)}"
             add_order_data(username, O_items,  O_Qty, O_TotalPrice, O_id)
+            
+            checkout(username, O_TotalPrice)
+    else:
+        st.error("Authentication failed. Please check your username and password.")
+
+        
 
 
 if __name__ == '__main__':
@@ -375,7 +431,7 @@ if __name__ == '__main__':
     create_customer_table()
     create_order_table()
 
-    menu = ["Login", "SignUp", "Admin"]
+    menu = ["Login", "SignUp", "Admin", "About"]
     choice = st.sidebar.selectbox("Menu", menu)
 
     if choice == "Login":
@@ -383,12 +439,20 @@ if __name__ == '__main__':
         password = st.sidebar.text_input("Password", type='password')
         if st.sidebar.checkbox(label="Login"):
             customer(username, password)
-
+            
+    if st.button("Retrieve Password"):
+        password = retrive_password(username)
+        if password:
+            st.success(f"Your password is {password}")
+        else:
+            st.error("No such user exists in the database. Please check the username and try again.")
+            
     elif choice == "SignUp":
         st.subheader("Create New Account")
         cust_name = st.text_input("Name")
         cust_password = st.text_input("Password", type='password', key=1000)
-        cust_password1 = st.text_input("Confirm Password", type='password', key=1001)
+        cust_password1 = st.text_input(
+            "Confirm Password", type='password', key=1001)
 
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -405,6 +469,13 @@ if __name__ == '__main__':
                 st.info("Go to Login Menu to login")
             else:
                 st.warning('Password doesn\'t match')
+
+        add_auth(True)
+        st.error("You need to login to access this page")
+
+    elif choice == "About":
+        st.subheader("Python Project")
+        st.subheader("By Indrranil")
 
     elif choice == "Admin":
         username = st.sidebar.text_input("User Name")
