@@ -313,6 +313,23 @@ def authenticate(username, password):
 # Compares the pass retrived from db with the provided pass 
     return cust_password[0][0] == password
 
+def retrive_password(username):
+    c.execute("SELECT  C_Password FROM Customers WHERE C_Name = ?", (username,))
+    result = c.fetchone()
+    if result:
+        return result[0]
+    else:
+        return None 
+    
+#def forgot_password(username):
+   # st.subheader("Forgot Password")
+    #username = st.text_input("User Name")
+    #if st.selectbox("Retrieve Password") and username:
+     #   password = retrive_password(username)   
+      #  if password:
+       #     st.success(f"Your password is {password}")
+        #else:
+         #     st.error("No such user exists in the database. Please check the username and try again.")
 
 
 
@@ -375,7 +392,7 @@ if __name__ == '__main__':
     create_customer_table()
     create_order_table()
 
-    menu = ["Login", "SignUp", "Admin"]
+    menu = ["Login", "SignUp", "Admin",  "About"]
     choice = st.sidebar.selectbox("Menu", menu)
 
     if choice == "Login":
@@ -383,6 +400,13 @@ if __name__ == '__main__':
         password = st.sidebar.text_input("Password", type='password')
         if st.sidebar.checkbox(label="Login"):
             customer(username, password)
+               
+    if st.button("Retrieve Password"):
+        password = retrive_password(username)
+        if password:
+            st.success(f"Your password is {password}")
+        else:
+            st.error("No such user exists in the database. Please check the username and try again.")
 
     elif choice == "SignUp":
         st.subheader("Create New Account")
@@ -405,6 +429,12 @@ if __name__ == '__main__':
                 st.info("Go to Login Menu to login")
             else:
                 st.warning('Password doesn\'t match')
+
+        
+                
+    elif choice == "About":
+        st.subheader("Python Project")
+        st.subheader("By Indrranil ")
 
     elif choice == "Admin":
         username = st.sidebar.text_input("User Name")
