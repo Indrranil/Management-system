@@ -360,6 +360,13 @@ def forgot_password(username):
         else:
             st.error("No such user exists in the database. Please check the username and try again.")
         
+def retrieve_username(email):
+    c.execute("SELECT C_Name FROM Customers WHERE C_Email = ?", (email,))
+    result = c.fetchone()
+    if result:
+        return result[0]
+    else:
+        return None
 
 
 # match O_items names
@@ -441,11 +448,20 @@ if __name__ == '__main__':
             customer(username, password)
             
     if st.button("Retrieve Password"):
+        username = st.text_input("Enter your User Name")
         password = retrive_password(username)
         if password:
             st.success(f"Your password is {password}")
         else:
             st.error("No such user exists in the database. Please check the username and try again.")
+            
+    if st.button("Retrieve Username"):
+        email = st.text_input("Enter your email address")
+        username = retrieve_username(email)
+        if username:
+            st.success(f"Your username is {username}")
+        else:
+            st.error("No user found with this email address.")
             
     elif choice == "SignUp":
         st.subheader("Create New Account")
@@ -482,6 +498,8 @@ if __name__ == '__main__':
         password = st.sidebar.text_input("Password", type='password')
         if username == 'admin' and password == 'admin':
             admin()
+
+    
 
 
 page_bg_img = """
