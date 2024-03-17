@@ -13,10 +13,10 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 #from st_paywall import add_auth
-import stripe
+#import stripe
 import streamlit.components.v1 as components
 
-stripe.api_key = "rk_test_51OubhsSAkfFPs5lW1kTN2pCiRh2Yzl43i3hcuiXdtyDzuC38VZVekNJwTIiCRdHQXITJhMDtKm3FFqZlMzkbWHse00GmRSOVYk"
+#stripe.api_key = "rk_test_51OubhsSAkfFPs5lW1kTN2pCiRh2Yzl43i3hcuiXdtyDzuC38VZVekNJwTIiCRdHQXITJhMDtKm3FFqZlMzkbWHse00GmRSOVYk"
 ##stripe.SetupIntent.create(usage="on_session")
 
 
@@ -319,7 +319,7 @@ def authenticate(username, password):
 # Compares the pass retrived from db with the provided pass
     return cust_password[0][0] == password
 
-def checkout(username, O_TotalPrice):
+#def checkout(username, O_TotalPrice):
     try:
         # Create a PaymentIntent to initiate the payment process
         intent = stripe.PaymentIntent.create(
@@ -350,7 +350,7 @@ def retrive_password(username):
     else:
         return None 
     
-def forgot_password(username):
+#def forgot_password(username):
     st.subheader("Forgot Password")
     username = st.text_input("User Name")
     if st.tk.Button("Retrieve Button"):
