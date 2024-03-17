@@ -12,7 +12,7 @@ import random
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from st_paywall import add_auth
+#from st_paywall import add_auth
 import stripe
 import streamlit.components.v1 as components
 
@@ -486,8 +486,8 @@ if __name__ == '__main__':
             else:
                 st.warning('Password doesn\'t match')
 
-        add_auth(True)
-        st.error("You need to login to access this page")
+      #  add_auth(True)
+      #  st.error("You need to login to access this page")
 
     elif choice == "About":
         st.subheader("Python Project")
