@@ -1,6 +1,5 @@
 
 # import commands below download a few python libs
-# import commands below download a few python libs
 
 # streamlit as st for connviencnce
 import streamlit as st
@@ -13,12 +12,21 @@ import random
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from st_paywall import add_auth
+import stripe
+import streamlit.components.v1 as components
+import plotly.graph_objs as go
+import plotly.express as px
+import webbrowser
+
+stripe.api_key = "sk_test_51OubhsSAkfFPs5lWOLSJwE6IE7gBhEgGQNkiSPWAP7NQr3JotPH3iXJEmQ0ojXfBUdnLpFD5qEo7xI74IV3cKfES00QXSQYpoM"
+#stripe.SetupIntent.create(usage="on_session")
+payment_url = "https://buy.stripe.com/test_3cs8xIc0S4Kk9I47ss"
 
 
+# IMAGES_FOLDER = "images"
 
-##IMAGES_FOLDER = "images"
-
-#  sets up connection with the database
+# sets up connection with the database
 conn = sqlite3.connect("drug_data.db", check_same_thread=False)
 
 # creates a cursor object to execute sql queries on the sqlite db
@@ -105,9 +113,9 @@ def create_drug_table():
 
 def add_drug_data(Dname, Dexpdate, Duse, Dqty, DPrice, Did, image_path):
     c.execute('''INSERT INTO Drugs
-                (D_Name, D_Expdate, D_Use, D_Qty, D_Price, D_id,D_image_path)
-                VALUES (?, ?, ?, ?, ?, ?, ?)''',
-            (Dname, Dexpdate, Duse, Dqty, DPrice, Did, image_path))
+                 (D_Name, D_Expdate, D_Use, D_Qty, D_Price, D_id,D_image_path)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)''',
+              (Dname, Dexpdate, Duse, Dqty, DPrice, Did, image_path))
     conn.commit()
 
 
@@ -140,8 +148,6 @@ def fetch_drug_price(drug_name):
     ).fetchone()
     # Add this line to check the result from the database
     print("Result from database:", result)
-    # Add this line to check the result from the database
-    print("Result from database:", result)
     return result[0] if result else 0.00
 
 
@@ -164,6 +170,9 @@ def add_order_data(O_Name, O_Items, O_Qty, O_TotalPrice, O_id):
         VALUES (DATE(), ?)
         ''', (O_TotalPrice,))
     conn.commit()
+
+    # Refresh sales trend graph
+    visualize_sales_trends()
 
 
 def view_order_data(customer_name):
@@ -284,8 +293,6 @@ def admin():
             with st.expander("View All Customer Data"):
                 cust_clean_df = pd.DataFrame(
                     cust_result, columns=["Name", "Password", "Email-ID", "Area", "Number"])
-                cust_clean_df = pd.DataFrame(
-                    cust_result, columns=["Name", "Password", "Email-ID", "Area", "Number"])
                 st.dataframe(cust_clean_df)
 
         if choice == 'Update':
@@ -309,8 +316,6 @@ def admin():
             with st.expander("View All Order Data"):
                 order_clean_df = pd.DataFrame(
                     order_result, columns=["Name", "Items", "Qty", "ID", "Price"])
-                order_clean_df = pd.DataFrame(
-                    order_result, columns=["Name", "Items", "Qty", "ID", "Price"])
                 st.dataframe(order_clean_df)
 
     elif choice == "About":
@@ -327,53 +332,6 @@ def authenticate(username, password):
     return cust_password[0][0] == password
 
 #def checkout(username, O_TotalPrice):
-    try:
-        # Create a PaymentIntent to initiate the payment process
-        intent = stripe.PaymentIntent.create(
-            amount=int(O_TotalPrice * 100),  # Amount in cents
-            currency="inr",
-            description="Pharmacy Order",
-            metadata={"order_id": username},
-        )
-        # Redirect the user to the Stripe payment page
-        st.markdown("**Redirecting to Stripe payment page...**")
-        st.write(f"**Amount: Rs. {O_TotalPrice:.2f}**")
-        st.markdown(f"**PaymentIntent Client Secret:** {intent.client_secret}")
-        html_redirect = f"""
-        <script type="text/javascript">
-        window.location.href = "https://checkout.stripe.com/pay/{intent.client_secret}";
-        </script>
-        """
-        components.html(html_redirect)
-    except stripe.error.StripeError as e:
-        st.error(f"Error processing payment: {e}")
-        
-        
-def retrive_password(username):
-    c.execute("SELECT  C_Password FROM Customers WHERE C_Name = ?", (username,))
-    result = c.fetchone()
-    if result:
-        return result[0]
-    else:
-        return None 
-    
-#def forgot_password(username):
-    st.subheader("Forgot Password")
-    username = st.text_input("User Name")
-    if st.tk.Button("Retrieve Button"):
-        password = retrive_password(username)
-        if password:
-            st.success(f"Your password is {password}")
-        else:
-            st.error("No such user exists in the database. Please check the username and try again.")
-        
-def retrieve_username(email):
-    c.execute("SELECT C_Name FROM Customers WHERE C_Email = ?", (email,))
-    result = c.fetchone()
-    if result:
-        return result[0]
-    else:
-        return None#def checkout(username, O_TotalPrice):
     try:
         # Create a PaymentIntent to initiate the payment process
         intent = stripe.PaymentIntent.create(
@@ -535,11 +493,9 @@ def customer(username, password):
         st.subheader(f"Drug: {drug_result[2][0]}")
         img_path = os.path.join(os.path.dirname(__file__), 'images/vicks.jpeg')
         img = Image.open(img_path)
-        st.image(img, width=100, caption=f"Rs. {  fetch_drug_price(drug_result[2][0]):.2f}/-")
+        st.image(img, width=100, caption=f"Rs. { fetch_drug_price(drug_result[2][0]):.2f}/-")
         vicks = st.slider(label="Quantity", min_value=0, max_value=5, key=3)
         st.info(f"When to USE: {drug_result[2][2]}")
-        O_TotalPrice = 0
-        O_id = "" 
         O_TotalPrice = 0
         O_id = "" 
         if st.button(label="Buy now"):
@@ -553,20 +509,13 @@ def customer(username, password):
                 O_items += "Vicks VaporRub"
             O_Qty = f"{dolo650},{strepsils},{vicks}"
 
+            # calculates the total price of the order
+            O_TotalPrice = calculate_total_price(O_items, O_Qty)
 
-            #cal;culates the total price of the order
-            O_TotalPrice = calculate_total_price( O_items, O_Qty)
-            
             st.success(f"Total Price: Rs. {O_TotalPrice:.2f}")
 
             O_id = f"{username}#O{random.randint(0, 1000000)}"
             add_order_data(username, O_items,  O_Qty, O_TotalPrice, O_id)
-            
-            checkout(username, O_TotalPrice)
-    else:
-        st.error("Authentication failed. Please check your username and password.")
-
-        
             
             checkout(username, O_TotalPrice)
             
@@ -582,7 +531,7 @@ if __name__ == '__main__':
     create_customer_table()
     create_order_table()
 
-    menu = ["Login", "SignUp", "Admin"]
+    menu = ["Login", "SignUp", "Admin", "About","Sales Trends"]
     choice = st.sidebar.selectbox("Menu", menu)
 
     if choice == "Login":
@@ -630,6 +579,13 @@ if __name__ == '__main__':
             else:
                 st.warning('Password doesn\'t match')
 
+        add_auth(True)
+        st.error("You need to login to access this page")
+
+    elif choice == "About":
+        st.subheader("Python Project")
+        st.subheader("By Indrranil")
+
     elif choice == "Admin":
         username = st.sidebar.text_input("User Name")
         password = st.sidebar.text_input("Password", type='password')
@@ -641,10 +597,6 @@ if __name__ == '__main__':
         st.subheader("Sales Trends")
         visualize_sales_trends()
         
-    
-
-    
-
     
 
 
