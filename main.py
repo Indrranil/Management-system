@@ -331,7 +331,7 @@ def authenticate(username, password):
 # Compares the pass retrived from db with the provided pass
     return cust_password[0][0] == password
 
-#def checkout(username, O_TotalPrice):
+#   def checkout(username, O_TotalPrice):
     try:
         # Create a PaymentIntent to initiate the payment process
         intent = stripe.PaymentIntent.create(
