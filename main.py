@@ -15,7 +15,6 @@ from email.mime.multipart import MIMEMultipart
 from st_paywall import add_auth
 import stripe
 import streamlit.components.v1 as components
-import plotly.graph_objs as go
 import plotly.express as px
 import webbrowser
 
