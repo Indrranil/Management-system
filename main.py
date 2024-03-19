@@ -458,7 +458,7 @@ def visualize_sales_trends():
     )
     
     # Display the Plotly figure using Streamlit
-    #st.plotly_chart(fig)
+    st.plotly_chart(fig)
 
 # match O_items names
 
@@ -596,7 +596,6 @@ if __name__ == '__main__':
     elif choice == "Sales Trends":
         st.subheader("Sales Trends")
         visualize_sales_trends()
-        
     
 
 
