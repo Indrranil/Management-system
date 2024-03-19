@@ -9,6 +9,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import stripe
+import plotly.graph_objs as go
 import plotly.express as px
 import webbrowser
 
