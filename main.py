@@ -14,10 +14,10 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from st_paywall import add_auth
 import stripe
-import streamlit.components.v1 as components
-import plotly.graph_objs as go
+#import streamlit.components.v1 as components
 import plotly.express as px
 import webbrowser
+#import plotly.graph_objs as go
 
 stripe.api_key = "sk_test_51OubhsSAkfFPs5lWOLSJwE6IE7gBhEgGQNkiSPWAP7NQr3JotPH3iXJEmQ0ojXfBUdnLpFD5qEo7xI74IV3cKfES00QXSQYpoM"
 #stripe.SetupIntent.create(usage="on_session")
