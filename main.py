@@ -109,9 +109,9 @@ def create_drug_table():
 
 def add_drug_data(Dname, Dexpdate, Duse, Dqty, DPrice, Did, image_path):
     c.execute('''INSERT INTO Drugs
-                 (D_Name, D_Expdate, D_Use, D_Qty, D_Price, D_id,D_image_path)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)''',
-              (Dname, Dexpdate, Duse, Dqty, DPrice, Did, image_path))
+                (D_Name, D_Expdate, D_Use, D_Qty, D_Price, D_id,D_image_path)
+                VALUES (?, ?, ?, ?, ?, ?, ?)''',
+            (Dname, Dexpdate, Duse, Dqty, DPrice, Did, image_path))
     conn.commit()
 
 
