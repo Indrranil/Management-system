@@ -1,7 +1,3 @@
-
-# import commands below download a few python libs
-
-# streamlit as st for connviencnce
 import streamlit as st
 from streamlit import selectbox
 import pandas as pd
@@ -12,11 +8,9 @@ import random
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import webbrowser
-from st_paywall import add_auth
 import stripe
-#import streamlit.components.v1 as components
 import plotly.express as px
+import webbrowser
 
 
 
@@ -580,7 +574,7 @@ if __name__ == '__main__':
             else:
                 st.warning('Password doesn\'t match')
 
-        add_auth(True)
+       # add_auth(True)
         st.error("You need to login to access this page")
 
     elif choice == "About":

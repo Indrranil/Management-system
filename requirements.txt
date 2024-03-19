@@ -2,3 +2,6 @@ streamlit
 pandas
 Pillow
 st-paywall
+stripe
+plotly
+smtplib
