@@ -15,9 +15,13 @@ from email.mime.multipart import MIMEMultipart
 from st_paywall import add_auth
 import stripe
 import streamlit.components.v1 as components
+import plotly.graph_objs as go
+import plotly.express as px
+import webbrowser
 
-stripe.api_key = "rk_test_51OubhsSAkfFPs5lW1kTN2pCiRh2Yzl43i3hcuiXdtyDzuC38VZVekNJwTIiCRdHQXITJhMDtKm3FFqZlMzkbWHse00GmRSOVYk"
-##stripe.SetupIntent.create(usage="on_session")
+stripe.api_key = "sk_test_51OubhsSAkfFPs5lWOLSJwE6IE7gBhEgGQNkiSPWAP7NQr3JotPH3iXJEmQ0ojXfBUdnLpFD5qEo7xI74IV3cKfES00QXSQYpoM"
+#stripe.SetupIntent.create(usage="on_session")
+payment_url = "https://buy.stripe.com/test_3cs8xIc0S4Kk9I47ss"
 
 
 # IMAGES_FOLDER = "images"
@@ -161,6 +165,14 @@ def add_order_data(O_Name, O_Items, O_Qty, O_TotalPrice, O_id):
         VALUES (?, ?, ?, ?, ?)
         ''', (O_Name, O_Items, O_Qty, O_TotalPrice, O_id))
     conn.commit()
+    c.execute('''
+        INSERT INTO Sales (Date, TotalPrice)
+        VALUES (DATE(), ?)
+        ''', (O_TotalPrice,))
+    conn.commit()
+
+    # Refresh sales trend graph
+    visualize_sales_trends()
 
 
 def view_order_data(customer_name):
@@ -319,7 +331,7 @@ def authenticate(username, password):
 # Compares the pass retrived from db with the provided pass
     return cust_password[0][0] == password
 
-def checkout(username, O_TotalPrice):
+#def checkout(username, O_TotalPrice):
     try:
         # Create a PaymentIntent to initiate the payment process
         intent = stripe.PaymentIntent.create(
@@ -340,7 +352,13 @@ def checkout(username, O_TotalPrice):
         components.html(html_redirect)
     except stripe.error.StripeError as e:
         st.error(f"Error processing payment: {e}")
-        
+def checkout(username, O_TotalPrice):
+    try:
+        # Redirect the user to the payment page in the default web browser
+        webbrowser.open_new_tab(payment_url)
+    except Exception as e:
+        st.error(f"Error redirecting to payment page: {e}")
+
         
 def retrive_password(username):
     c.execute("SELECT  C_Password FROM Customers WHERE C_Name = ?", (username,))
@@ -367,7 +385,80 @@ def retrieve_username(email):
         return result[0]
     else:
         return None
+    
+def create_payment_intent(amount):
+    try:
+        # Create a PaymentIntent to initiate the payment process
+        intent = stripe.PaymentIntent.create(
+            amount=int(amount * 100),  # Amount in cents
+            currency="INR",  # Currency
+            description="Pharmacy Order",  # Description of the payment
+            metadata={"order_id": "your_order_id"},  # Metadata for tracking purposes
+        )
+        return intent.client_secret
+    except stripe.error.StripeError as e:
+        # Handle any errors that occur during the payment process
+        st.error(f"Error processing payment: {e}")
 
+# Define a function to redirect the user to the Stripe payment page
+def redirect_to_stripe_payment(client_secret):
+    st.markdown("**Redirecting to Stripe payment page...**")
+    html_redirect = f"""
+    <script type="text/javascript">
+    window.location.href = "https://checkout.stripe.com/pay/{client_secret}";
+    </script>
+    """
+    components.html(html_redirect)
+
+
+
+
+    
+# Add this function to your project to fetch sales data
+def fetch_sales_data():
+    # Assuming you have a Sales table with columns Date and TotalPrice
+    sales_data = c.execute("SELECT Date, TotalPrice FROM Sales").fetchall()
+    return sales_data
+
+# Add this function to your project to visualize sales trends
+
+
+def visualize_sales_trends():
+    # Fetch sales data from the database
+    sales_data = fetch_sales_data()
+    
+    # Extract dates and total prices from sales data
+    dates = [row[0] for row in sales_data]
+    total_prices = [row[1] for row in sales_data]
+    
+    # Create a Plotly figure using Plotly Express
+    fig = px.line(x=dates, y=total_prices, title='Sales Trends', labels={'x': 'Date', 'y': 'Total Sales'})
+    
+    fig.update_traces(line=dict(color='yellow'))
+    
+    # Customize the figure layout to only display x-axis and y-axis
+    fig.update_layout(
+        xaxis=dict(
+            title='Date',
+            tickfont=dict(size=12, color='black'),
+            showgrid=True,
+            gridwidth=1,
+            gridcolor='lightgray',
+        ),
+        yaxis=dict(
+            title='Total Sales',
+            tickfont=dict(size=12, color='black'),
+            showgrid=True,
+            gridwidth=1,
+            gridcolor='lightgray',
+        ),
+        showlegend=False,  # Disable legend
+        plot_bgcolor='rgba(0, 0, 0, 0)',
+        paper_bgcolor='rgba(0, 0, 0, 0)',
+    )
+    
+    # Display the Plotly figure using Streamlit
+    #st.plotly_chart(fig)
 
 # match O_items names
 
@@ -418,7 +509,7 @@ def customer(username, password):
                 O_items += "Vicks VaporRub"
             O_Qty = f"{dolo650},{strepsils},{vicks}"
 
-            # cal;culates the total price of the order
+            # calculates the total price of the order
             O_TotalPrice = calculate_total_price(O_items, O_Qty)
 
             st.success(f"Total Price: Rs. {O_TotalPrice:.2f}")
@@ -427,6 +518,8 @@ def customer(username, password):
             add_order_data(username, O_items,  O_Qty, O_TotalPrice, O_id)
             
             checkout(username, O_TotalPrice)
+            
+            
     else:
         st.error("Authentication failed. Please check your username and password.")
 
@@ -438,7 +531,7 @@ if __name__ == '__main__':
     create_customer_table()
     create_order_table()
 
-    menu = ["Login", "SignUp", "Admin", "About"]
+    menu = ["Login", "SignUp", "Admin", "About","Sales Trends"]
     choice = st.sidebar.selectbox("Menu", menu)
 
     if choice == "Login":
@@ -498,7 +591,12 @@ if __name__ == '__main__':
         password = st.sidebar.text_input("Password", type='password')
         if username == 'admin' and password == 'admin':
             admin()
-
+            visualize_sales_trends() 
+    
+    elif choice == "Sales Trends":
+        st.subheader("Sales Trends")
+        visualize_sales_trends()
+        
     
 
 
