@@ -1,5 +1,6 @@
 
 # import commands below download a few python libs
+# import commands below download a few python libs
 
 # streamlit as st for connviencnce
 import streamlit as st
@@ -12,17 +13,12 @@ import random
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-#from st_paywall import add_auth
-#import stripe
-import streamlit.components.v1 as components
-
-#stripe.api_key = "rk_test_51OubhsSAkfFPs5lW1kTN2pCiRh2Yzl43i3hcuiXdtyDzuC38VZVekNJwTIiCRdHQXITJhMDtKm3FFqZlMzkbWHse00GmRSOVYk"
-##stripe.SetupIntent.create(usage="on_session")
 
 
-# IMAGES_FOLDER = "images"
 
-# sets up connection with the database
+##IMAGES_FOLDER = "images"
+
+#  sets up connection with the database
 conn = sqlite3.connect("drug_data.db", check_same_thread=False)
 
 # creates a cursor object to execute sql queries on the sqlite db
@@ -144,6 +140,8 @@ def fetch_drug_price(drug_name):
     ).fetchone()
     # Add this line to check the result from the database
     print("Result from database:", result)
+    # Add this line to check the result from the database
+    print("Result from database:", result)
     return result[0] if result else 0.00
 
 
@@ -160,6 +158,11 @@ def add_order_data(O_Name, O_Items, O_Qty, O_TotalPrice, O_id):
         INSERT INTO Orders (O_Name, O_Items, O_Qty, O_TotalPrice, O_id)
         VALUES (?, ?, ?, ?, ?)
         ''', (O_Name, O_Items, O_Qty, O_TotalPrice, O_id))
+    conn.commit()
+    c.execute('''
+        INSERT INTO Sales (Date, TotalPrice)
+        VALUES (DATE(), ?)
+        ''', (O_TotalPrice,))
     conn.commit()
 
 
@@ -281,6 +284,8 @@ def admin():
             with st.expander("View All Customer Data"):
                 cust_clean_df = pd.DataFrame(
                     cust_result, columns=["Name", "Password", "Email-ID", "Area", "Number"])
+                cust_clean_df = pd.DataFrame(
+                    cust_result, columns=["Name", "Password", "Email-ID", "Area", "Number"])
                 st.dataframe(cust_clean_df)
 
         if choice == 'Update':
@@ -302,6 +307,8 @@ def admin():
             st.subheader("Order Details")
             order_result = view_all_order_data()
             with st.expander("View All Order Data"):
+                order_clean_df = pd.DataFrame(
+                    order_result, columns=["Name", "Items", "Qty", "ID", "Price"])
                 order_clean_df = pd.DataFrame(
                     order_result, columns=["Name", "Items", "Qty", "ID", "Price"])
                 st.dataframe(order_clean_df)
@@ -366,8 +373,134 @@ def retrieve_username(email):
     if result:
         return result[0]
     else:
-        return None
+        return None#def checkout(username, O_TotalPrice):
+    try:
+        # Create a PaymentIntent to initiate the payment process
+        intent = stripe.PaymentIntent.create(
+            amount=int(O_TotalPrice * 100),  # Amount in cents
+            currency="inr",
+            description="Pharmacy Order",
+            metadata={"order_id": username},
+        )
+        # Redirect the user to the Stripe payment page
+        st.markdown("**Redirecting to Stripe payment page...**")
+        st.write(f"**Amount: Rs. {O_TotalPrice:.2f}**")
+        st.markdown(f"**PaymentIntent Client Secret:** {intent.client_secret}")
+        html_redirect = f"""
+        <script type="text/javascript">
+        window.location.href = "https://checkout.stripe.com/pay/{intent.client_secret}";
+        </script>
+        """
+        components.html(html_redirect)
+    except stripe.error.StripeError as e:
+        st.error(f"Error processing payment: {e}")
+def checkout(username, O_TotalPrice):
+    try:
+        # Redirect the user to the payment page in the default web browser
+        webbrowser.open_new_tab(payment_url)
+    except Exception as e:
+        st.error(f"Error redirecting to payment page: {e}")
 
+        
+def retrive_password(username):
+    c.execute("SELECT  C_Password FROM Customers WHERE C_Name = ?", (username,))
+    result = c.fetchone()
+    if result:
+        return result[0]
+    else:
+        return None 
+    
+def forgot_password(username):
+    st.subheader("Forgot Password")
+    username = st.text_input("User Name")
+    if st.tk.Button("Retrieve Button"):
+        password = retrive_password(username)
+        if password:
+            st.success(f"Your password is {password}")
+        else:
+            st.error("No such user exists in the database. Please check the username and try again.")
+        
+def retrieve_username(email):
+    c.execute("SELECT C_Name FROM Customers WHERE C_Email = ?", (email,))
+    result = c.fetchone()
+    if result:
+        return result[0]
+    else:
+        return None
+    
+def create_payment_intent(amount):
+    try:
+        # Create a PaymentIntent to initiate the payment process
+        intent = stripe.PaymentIntent.create(
+            amount=int(amount * 100),  # Amount in cents
+            currency="INR",  # Currency
+            description="Pharmacy Order",  # Description of the payment
+            metadata={"order_id": "your_order_id"},  # Metadata for tracking purposes
+        )
+        return intent.client_secret
+    except stripe.error.StripeError as e:
+        # Handle any errors that occur during the payment process
+        st.error(f"Error processing payment: {e}")
+
+# Define a function to redirect the user to the Stripe payment page
+def redirect_to_stripe_payment(client_secret):
+    st.markdown("**Redirecting to Stripe payment page...**")
+    html_redirect = f"""
+    <script type="text/javascript">
+    window.location.href = "https://checkout.stripe.com/pay/{client_secret}";
+    </script>
+    """
+    components.html(html_redirect)
+
+
+
+
+    
+# Add this function to your project to fetch sales data
+def fetch_sales_data():
+    # Assuming you have a Sales table with columns Date and TotalPrice
+    sales_data = c.execute("SELECT Date, TotalPrice FROM Sales").fetchall()
+    return sales_data
+
+# Add this function to your project to visualize sales trends
+
+
+def visualize_sales_trends():
+    # Fetch sales data from the database
+    sales_data = fetch_sales_data()
+    
+    # Extract dates and total prices from sales data
+    dates = [row[0] for row in sales_data]
+    total_prices = [row[1] for row in sales_data]
+    
+    # Create a Plotly figure using Plotly Express
+    fig = px.line(x=dates, y=total_prices, title='Sales Trends', labels={'x': 'Date', 'y': 'Total Sales'})
+    
+    fig.update_traces(line=dict(color='yellow'))
+    
+    # Customize the figure layout to only display x-axis and y-axis
+    fig.update_layout(
+        xaxis=dict(
+            title='Date',
+            tickfont=dict(size=12, color='black'),
+            showgrid=True,
+            gridwidth=1,
+            gridcolor='lightgray',
+        ),
+        yaxis=dict(
+            title='Total Sales',
+            tickfont=dict(size=12, color='black'),
+            showgrid=True,
+            gridwidth=1,
+            gridcolor='lightgray',
+        ),
+        showlegend=False,  # Disable legend
+        plot_bgcolor='rgba(0, 0, 0, 0)',
+        paper_bgcolor='rgba(0, 0, 0, 0)',
+    )
+    
+    # Display the Plotly figure using Streamlit
+    #st.plotly_chart(fig)
 
 # match O_items names
 
@@ -402,9 +535,11 @@ def customer(username, password):
         st.subheader(f"Drug: {drug_result[2][0]}")
         img_path = os.path.join(os.path.dirname(__file__), 'images/vicks.jpeg')
         img = Image.open(img_path)
-        st.image(img, width=100, caption=f"Rs. { fetch_drug_price(drug_result[2][0]):.2f}/-")
+        st.image(img, width=100, caption=f"Rs. {  fetch_drug_price(drug_result[2][0]):.2f}/-")
         vicks = st.slider(label="Quantity", min_value=0, max_value=5, key=3)
         st.info(f"When to USE: {drug_result[2][2]}")
+        O_TotalPrice = 0
+        O_id = "" 
         O_TotalPrice = 0
         O_id = "" 
         if st.button(label="Buy now"):
@@ -418,15 +553,24 @@ def customer(username, password):
                 O_items += "Vicks VaporRub"
             O_Qty = f"{dolo650},{strepsils},{vicks}"
 
-            # cal;culates the total price of the order
-            O_TotalPrice = calculate_total_price(O_items, O_Qty)
 
+            #cal;culates the total price of the order
+            O_TotalPrice = calculate_total_price( O_items, O_Qty)
+            
             st.success(f"Total Price: Rs. {O_TotalPrice:.2f}")
 
             O_id = f"{username}#O{random.randint(0, 1000000)}"
             add_order_data(username, O_items,  O_Qty, O_TotalPrice, O_id)
             
             checkout(username, O_TotalPrice)
+    else:
+        st.error("Authentication failed. Please check your username and password.")
+
+        
+            
+            checkout(username, O_TotalPrice)
+            
+            
     else:
         st.error("Authentication failed. Please check your username and password.")
 
@@ -438,7 +582,7 @@ if __name__ == '__main__':
     create_customer_table()
     create_order_table()
 
-    menu = ["Login", "SignUp", "Admin", "About"]
+    menu = ["Login", "SignUp", "Admin"]
     choice = st.sidebar.selectbox("Menu", menu)
 
     if choice == "Login":
@@ -486,18 +630,20 @@ if __name__ == '__main__':
             else:
                 st.warning('Password doesn\'t match')
 
-      #  add_auth(True)
-      #  st.error("You need to login to access this page")
-
-    elif choice == "About":
-        st.subheader("Python Project")
-        st.subheader("By Indrranil")
-
     elif choice == "Admin":
         username = st.sidebar.text_input("User Name")
         password = st.sidebar.text_input("Password", type='password')
         if username == 'admin' and password == 'admin':
             admin()
+            visualize_sales_trends() 
+    
+    elif choice == "Sales Trends":
+        st.subheader("Sales Trends")
+        visualize_sales_trends()
+        
+    
+
+    
 
     
 
