@@ -4,4 +4,3 @@ Pillow
 st-paywall
 stripe
 plotly
-smtplib
