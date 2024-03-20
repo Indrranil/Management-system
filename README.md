@@ -39,6 +39,6 @@ Before running the project locally, ensure you have the following installed:
    ```  
 
 ## FEEDBACK
-Your feedback is valuable! If you encounter any issues or have suggestions for improvement, please don't hesitate to [raise an issue](git@github.com:Indrranil/Management-system.git)
+Your feedback is valuable! If you encounter any issues or have suggestions for improvement, please don't hesitate to [raise an issue](git@github.com:Indrranil/Management-system.git/issues)
 
 
