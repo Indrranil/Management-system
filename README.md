@@ -22,24 +22,28 @@ Before running the project locally, ensure you have the following installed:
    ```bash
    git clone git@github.com:Indrranil/Management-system.git
 
+   ```
+
 2. After cloning the repository, navigate to the project directory:
 
    ```bash
    cd Management-system
+
+   ```
 
 3. Install the required dependencies:
 
    ```bash
    pip install -r requirements.txt
 
+   ```
+
 4. Run the project:
 
    ```bash
-   streamlit run app.py
-   ```  
+   streamlit run main.py
+   ```
 
 ## FEEDBACK
+
 Your feedback is valuable! If you encounter any issues or have suggestions for improvement, please don't hesitate to [raise an issue](https://github.com/Indrranil/Management-system/issues)
-
-
-
