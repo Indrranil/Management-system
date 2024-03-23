@@ -35,7 +35,7 @@ Before running the project locally, ensure you have the following installed:
 4. Run the project:
 
    ```bash
-   streamlit run app.py
+   streamlit run main.py
    ```  
 
 ## FEEDBACK
