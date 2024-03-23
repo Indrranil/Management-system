@@ -1,13 +1,44 @@
-# Pharmacy Management System
+# Management System
 
-## PROBLEM STATEMENT
-- In this era of growing demands of pharmaceutical and chemical products for health and medicine; every medical store, be it a small of medium sized businesses are running rampant towards efficient store management and rapid revenue computation. 
-- Instead of using the conventional style of paper-based records and documentation, electronic methods are preferred for stock maintenance, automatic updation of records while billing and reliable electronic documentation.
-- The software would reduce daily effort wage and labour numbers. Crushing numbers can now be left to the system.
+Welcome to the Management System! This system allows you to manage inventory and handle customer orders.
 
-## OBJECTIVE
-- The aim of this project is to develop an application to implement python backend and frontend with streamlit.
-- serverless database (sqlite), gives more fine advantage to this application.
-- This system will help the pharmacist to maintain the records of the medicines, handle user and admin details, check and renew the validity of the medicines and orders placed by the customer.
+## Deployed Project
+
+🌐 **Live Demo:** [Management System](https://management-system.streamlit.app/)
+
+## Local Setup
+
+### Prerequisites
+
+Before running the project locally, ensure you have the following installed:
+
+- Python 3.x
+- Pip (Python package manager)
+
+### Installation
+
+1. Clone the repository to your local machine:
+
+   ```bash
+   git clone git@github.com:Indrranil/Management-system.git
+
+2. After cloning the repository, navigate to the project directory:
+
+   ```bash
+   cd Management-system
+
+3. Install the required dependencies:
+
+   ```bash
+   pip install -r requirements.txt
+
+4. Run the project:
+
+   ```bash
+   streamlit run app.py
+   ```  
+
+## FEEDBACK
+Your feedback is valuable! If you encounter any issues or have suggestions for improvement, please don't hesitate to [raise an issue](https://github.com/Indrranil/Management-system/issues)
 
 
