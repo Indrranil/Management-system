@@ -330,6 +330,23 @@ def authenticate(username, password):
 # Compares the pass retrived from db with the provided pass
     return cust_password[0][0] == password
 
+def retrieve_customer_email(username):
+    c.execute("SELECT C_Email FROM Customers WHERE C_Name = ?", (username,))
+    result = c.fetchone()
+    if result:
+        return result[0]
+    else:
+        return None
+
+def fetch_order_details(username):
+    c.execute("SELECT O_Items, O_Qty FROM Orders WHERE O_Name = ?", (username,))
+    result = c.fetchone()
+    if result:
+        return result
+    else:
+        return None
+
+                                                                                    ##fix the email, send only the send_purchase_confirmation_email wala mail and fic the checkout
 #def checkout(username, O_TotalPrice):
     try:
         # Create a PaymentIntent to initiate the payment process
@@ -352,21 +369,75 @@ def authenticate(username, password):
     except stripe.error.StripeError as e:
         st.error(f"Error processing payment: {e}")
 def checkout(username, O_TotalPrice):
+#def checkout(username, O_TotalPrice):
+    try:
+        # Redirect the user to the payment page in the default web browser
+        webbrowser.open_new_tab(payment_url)
+
+        # Send purchase confirmation email
+        customer_email = retrieve_customer_email(username)
+        if customer_email:
+            # Fetch the details of the drugs bought
+            order_details = fetch_order_details(username)
+            if order_details:
+                items_table = "<table border='1'><tr><th>Drug Name</th><th>Quantity</th></tr>"
+                for item in order_details:
+                    items_table += f"<tr><td>{item[0]}</td><td>{item[1]}</td></tr>"
+                items_table += "</table>"
+                subject = "Purchase Confirmation"
+                message_body = f"Dear {username},\n\nThank you for your purchase. Below are the details of your order:\n\n{items_table}\n\nTotal Price: Rs. {O_TotalPrice:.2f}\n\nThank you for shopping with us!"
+                send_email_notification(customer_email, subject, message_body)
+    except Exception as e:
+        st.error(f"Error processing purchase and sending email: {e}")
+
     try:
         # Redirect the user to the payment page in the default web browser
         webbrowser.open_new_tab(payment_url)
     except Exception as e:
         st.error(f"Error redirecting to payment page: {e}")
 
-        
+
+def send_purchase_confirmation_email(customer_email, order_items, order_total_price):
+    # Construct the email message
+    message = f"Dear {customer_email},\n\n"
+    message += "Thank you for your purchase. Below are the details of your order:\n\n"
+
+    # Add order items to the message
+    message += "Drug Name\tQuantity\n"
+    for item, quantity in order_items:
+        message += f"{item}\t\t{quantity}\n"
+    message += f"\nTotal Price: Rs. {order_total_price:.2f}\n\n"
+
+    # Create a heart pattern
+    heart = "❤️"
+    heart_pattern = (
+        f" {heart}     {heart} \n"
+        f"{heart} {heart} {heart} {heart} {heart}\n"
+        f"  {heart} {heart}  \n"
+        f"    {heart}    "
+    )
+    message += f"{heart_pattern}\n\n"
+
+    # Add a thank you message
+    message += "Thank you for shopping with us!\n"
+
+    # Send the email
+    send_email_notification(customer_email, "Purchase Confirmation", message,heart)
+
+
+
+
+
+
+
 def retrive_password(username):
     c.execute("SELECT  C_Password FROM Customers WHERE C_Name = ?", (username,))
     result = c.fetchone()
     if result:
         return result[0]
     else:
-        return None 
-    
+        return None
+
 def forgot_password(username):
     st.subheader("Forgot Password")
     username = st.text_input("User Name")
@@ -376,7 +447,7 @@ def forgot_password(username):
             st.success(f"Your password is {password}")
         else:
             st.error("No such user exists in the database. Please check the username and try again.")
-        
+
 def retrieve_username(email):
     c.execute("SELECT C_Name FROM Customers WHERE C_Email = ?", (email,))
     result = c.fetchone()
@@ -384,7 +455,7 @@ def retrieve_username(email):
         return result[0]
     else:
         return None
-    
+
 def create_payment_intent(amount):
     try:
         # Create a PaymentIntent to initiate the payment process
@@ -412,7 +483,7 @@ def redirect_to_stripe_payment(client_secret):
 
 
 
-    
+
 # Add this function to your project to fetch sales data
 def fetch_sales_data():
     # Assuming you have a Sales table with columns Date and TotalPrice
@@ -425,16 +496,16 @@ def fetch_sales_data():
 def visualize_sales_trends():
     # Fetch sales data from the database
     sales_data = fetch_sales_data()
-    
+
     # Extract dates and total prices from sales data
     dates = [row[0] for row in sales_data]
     total_prices = [row[1] for row in sales_data]
-    
+
     # Create a Plotly figure using Plotly Express
     fig = px.line(x=dates, y=total_prices, title='Sales Trends', labels={'x': 'Date', 'y': 'Total Sales'})
-    
+
     fig.update_traces(line=dict(color='yellow'))
-    
+
     # Customize the figure layout to only display x-axis and y-axis
     fig.update_layout(
         xaxis=dict(
@@ -455,7 +526,7 @@ def visualize_sales_trends():
         plot_bgcolor='rgba(0, 0, 0, 0)',
         paper_bgcolor='rgba(0, 0, 0, 0)',
     )
-    
+
     # Display the Plotly figure using Streamlit
     st.plotly_chart(fig)
 
@@ -496,7 +567,7 @@ def customer(username, password):
         vicks = st.slider(label="Quantity", min_value=0, max_value=5, key=3)
         st.info(f"When to USE: {drug_result[2][2]}")
         O_TotalPrice = 0
-        O_id = "" 
+        O_id = ""
         if st.button(label="Buy now"):
             O_items = ""
 
@@ -515,14 +586,14 @@ def customer(username, password):
 
             O_id = f"{username}#O{random.randint(0, 1000000)}"
             add_order_data(username, O_items,  O_Qty, O_TotalPrice, O_id)
-            
+
             checkout(username, O_TotalPrice)
-            
-            
+
+
     else:
         st.error("Authentication failed. Please check your username and password.")
 
-        
+
 
 
 if __name__ == '__main__':
@@ -538,7 +609,7 @@ if __name__ == '__main__':
         password = st.sidebar.text_input("Password", type='password')
         if st.sidebar.checkbox(label="Login"):
             customer(username, password)
-            
+
     if st.button("Retrieve Password"):
         username = st.text_input("Enter your User Name")
         password = retrive_password(username)
@@ -546,7 +617,7 @@ if __name__ == '__main__':
             st.success(f"Your password is {password}")
         else:
             st.error("No such user exists in the database. Please check the username and try again.")
-            
+
     if st.button("Retrieve Username"):
         email = st.text_input("Enter your email address")
         username = retrieve_username(email)
@@ -554,7 +625,7 @@ if __name__ == '__main__':
             st.success(f"Your username is {username}")
         else:
             st.error("No user found with this email address.")
-            
+
     elif choice == "SignUp":
         st.subheader("Create New Account")
         cust_name = st.text_input("Name")
@@ -590,12 +661,12 @@ if __name__ == '__main__':
         password = st.sidebar.text_input("Password", type='password')
         if username == 'admin' and password == 'admin':
             admin()
-            visualize_sales_trends() 
-    
+            visualize_sales_trends()
+
     elif choice == "Sales Trends":
         st.subheader("Sales Trends")
         visualize_sales_trends()
-    
+
 
 
 page_bg_img = """
@@ -613,7 +684,7 @@ opacity: 0.7;
 background-image:  radial-gradient(#0020ff 2px, transparent 2px), radial-gradient(#0020ff 2px, #3e5162 2px);
 background-size: 80px 80px;
 background-position: 0 0,40px 40px;
-    
+
 }
 </style>
 
