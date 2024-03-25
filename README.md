@@ -44,6 +44,24 @@ Before running the project locally, ensure you have the following installed:
    streamlit run main.py
    ```
 
+### Running the Application with Docker
+
+1. Build the Docker image:
+   ```bash
+   docker build -t management-system .
+
+2. Run the Docker container:
+   ```bash
+   docker run -p 8080:8501 management-system
+
+3. Access the application in your browser at `http://localhost:8080`.
+
+
+## Aditional Information
+For more information about streamlit, visit the [Streamlit Documentation](https://docs.streamlit.io/)
+
+
+
 ## FEEDBACK
 
 Your feedback is valuable! If you encounter any issues or have suggestions for improvement, please don't hesitate to [raise an issue](https://github.com/Indrranil/Management-system/issues)
