@@ -1,3 +1,7 @@
 1. new ui for the current streamlit app 
-2. add search bar for drug search 
-3. fix upload image ->> possible soln add cors headers
+2. Google signin -> redirect back to app  
+3. Checkout Email
+4. Sales trend graph -> change lib or add new struct
+5. check for api creattion -> app can be scrapped | data about durgs and sales
+shared
+6. fix upload image ->> possible soln add cors headers
