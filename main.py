@@ -345,8 +345,7 @@ def fetch_order_details(username):
         return result
     else:
         return None
-
-                                                                                    ##fix the email, send only the send_purchase_confirmation_email wala mail and fic the checkout
+##fix the email, send only the send_purchase_confirmation_email wala mail and fic the checkout
 #def checkout(username, O_TotalPrice):
     try:
         # Create a PaymentIntent to initiate the payment process
