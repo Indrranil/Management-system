@@ -2,6 +2,14 @@ from modules.authenticate import
 import stripe 
 import streamlit as st
 import webbrowser
+from streamlit.components.v1 import components
+
+
+
+stripe.api_key = "sk_test_51OubhsSAkfFPs5lWOLSJwE6IE7gBhEgGQNkiSPWAP7NQr3JotPH3iXJEmQ0ojXfBUdnLpFD5qEo7xI74IV3cKfES00QXSQYpoM"
+#stripe.SetupIntent.create(usage="on_session")
+payment_url = "https://buy.stripe.com/test_3cs8xIc0S4Kk9I47ss"
+
 
 
 def checkout(username, O_TotalPrice):

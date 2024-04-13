@@ -1,5 +1,7 @@
 import sqlite3
 from modules.email import send_welcome_email
+import pandas as pd
+from modules.trends import visualize_sales_trends
 
 
 
