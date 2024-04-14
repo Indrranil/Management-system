@@ -23,7 +23,7 @@ from modules.authentication import retrieve_customer_email
 from modules.email import send_email_notification
 from modules.trends import visualize_sales_trends
 import pandas as pd
-from modules.database import( 
+from modules.database import(
     create_customer_table,
     add_customer_data,
     view_all_customer_data,
@@ -40,6 +40,7 @@ from modules.database import(
 )
 from streamlit import selectbox
 from st_paywall import add_auth
+
 
 
 def admin():
@@ -140,6 +141,13 @@ def admin():
         st.subheader("Python Project")
         st.subheader("By Indrranil ")
 
+
+
+
+
+
+
+
 def customer(username, password):
     if authenticate(username, password):
         st.title("Welcome to Pharmacy Store")
@@ -202,12 +210,11 @@ def customer(username, password):
         st.error("Authentication failed. Please check your username and password.")
 
 
-
-
 if __name__ == '__main__':
     create_drug_table()
     create_customer_table()
     create_order_table()
+
 
     menu = ["Login", "SignUp", "Admin", "About","Sales Trends"]
     choice = st.sidebar.selectbox("Menu", menu)
@@ -218,7 +225,7 @@ if __name__ == '__main__':
         if st.sidebar.checkbox(label="Login"):
             customer(username, password)
 
-    if st.button("Retrieve Password"):
+    if choice == "Login" and st.sidebar.button("Retrieve Password"):
         username = st.text_input("Enter your User Name")
         password = retrive_password(username)
         if password:
@@ -226,7 +233,7 @@ if __name__ == '__main__':
         else:
             st.error("No such user exists in the database. Please check the username and try again.")
 
-    if st.button("Retrieve Username"):
+    if choice == "Login" and st.sidebar.button("Retrieve Username"):
         email = st.text_input("Enter your email address")
         username = retrieve_username(email)
         if username:
