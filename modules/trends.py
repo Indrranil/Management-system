@@ -1,4 +1,12 @@
 import plotly.express as px
+import streamlit as st
+import sqlite3
+
+conn = sqlite3.connect("drug_data.db", check_same_thread=False)
+c = conn.cursor()
+
+
+
 def fetch_sales_data():
     # Assuming you have a Sales table with columns Date and TotalPrice
     sales_data = c.execute("SELECT Date, TotalPrice FROM Sales").fetchall()
@@ -24,14 +32,14 @@ def visualize_sales_trends():
     fig.update_layout(
         xaxis=dict(
             title='Date',
-            tickfont=dict(size=12, color='black'),
+            tickfont=dict(size=12, color='white'),
             showgrid=True,
             gridwidth=1,
             gridcolor='lightgray',
         ),
         yaxis=dict(
             title='Total Sales',
-            tickfont=dict(size=12, color='black'),
+            tickfont=dict(size=12, color='white'),
             showgrid=True,
             gridwidth=1,
             gridcolor='lightgray',

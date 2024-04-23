@@ -1,6 +1,7 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import streamlit as st
 
 def send_email_notification(recipient, subject, message):
     sender_email = "indrranil7@gmail.com"
@@ -43,13 +44,7 @@ def send_purchase_confirmation_email(customer_email, order_items, order_total_pr
 
     # Create a heart pattern
     heart = "❤️"
-    heart_pattern = (
-        f" {heart}     {heart} \n"
-        f"{heart} {heart} {heart} {heart} {heart}\n"
-        f"  {heart} {heart}  \n"
-        f"    {heart}    "
-    )
-    message += f"{heart_pattern}\n\n"
+    message += f"Heart symbol: {heart}\n\n"
 
     # Add a thank you message
     message += "Thank you for shopping with us!\n"

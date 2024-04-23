@@ -1,0 +1,242 @@
+def customer(username, password):
+    if authenticate(username, password):
+        st.title("Welcome to Pharmacy Store")
+        st.subheader("Your Order Details")
+        order_result = view_order_data(username)
+
+    with st.expander("View All Order Data"):
+        order_clean_df = pd.DataFrame(order_result, columns=[ "Name", "Items", "Qty", "ID", "Price"])  # define price in each drug below
+        st.dataframe(order_clean_df)
+
+    drug_result = view_all_drug_data()
+    st.subheader(f"Drug: {drug_result[0][0]}")
+    img_path = os.path.join(os.path.dirname(
+        __file__), 'images/dolo650.jpeg')
+    img = Image.open(img_path)
+    st.image(img, width=100, caption=f"Rs. {fetch_drug_price(drug_result[0][0]):.2f}/-")
+    dolo650 = st.slider(label="Quantity", min_value=0, max_value=5, key=1)
+    st.info(f"When to USE: {drug_result[0][2]}")
+
+    st.subheader(f"Drug: {drug_result[1][0]}")
+    img_path = os.path.join(os.path.dirname(
+        __file__), 'images/strepsils.jpeg')
+    img = Image.open(img_path)
+    st.image(img, width=100, caption=f"Rs. {fetch_drug_price(drug_result[1][0]):.2f}/-")
+    strepsils = st.slider(
+        label="Quantity", min_value=0, max_value=5, key=2)
+    st.info(f"When to USE: {drug_result[1][2]}")
+
+    st.subheader(f"Drug: {drug_result[2][0]}")
+    img_path = os.path.join(os.path.dirname(__file__), 'images/vicks.jpeg')
+    img = Image.open(img_path)
+    st.image(img, width=100, caption=f"Rs. { fetch_drug_price(drug_result[2][0]):.2f}/-")
+    vicks = st.slider(label="Quantity", min_value=0, max_value=5, key=3)
+    st.info(f"When to USE: {drug_result[2][2]}")
+    O_TotalPrice = 0
+    O_id = ""
+    if st.button(label="Buy now"):
+        O_items = ""
+
+        if dolo650 > 0:
+            O_items += "Dolo 650,"
+        if strepsils > 0:
+            O_items += "Strapsils,"
+        if vicks > 0:
+            O_items += "Vicks VaporRub"
+        O_Qty = f"{dolo650},{strepsils},{vicks}"
+
+            # calculates the total price of the order
+        O_TotalPrice = calculate_total_price(O_items, O_Qty)
+
+        st.success(f"Total Price: Rs. {O_TotalPrice:.2f}")
+
+        O_id = f"{username}#O{random.randint(0, 1000000)}"
+        add_order_data(username, O_items,  O_Qty, O_TotalPrice, O_id)
+
+        checkout(username, O_TotalPrice)
+
+    else:
+        st.error("Authentication failed. Please check your username and password.")
+        
+        
+        
+        
+        
+        
+        
+        CUSTOMER - 2
+        
+        
+        
+def customer(username, password):
+    if authenticate(username, password):
+        st.title("Welcome to Pharmacy Store")
+        st.subheader("Your Order Details")
+        order_result = view_order_data(username)
+
+    with st.expander("View All Order Data"):
+        order_clean_df = pd.DataFrame(order_result, columns=[ "Name", "Items", "Qty", "ID", "Price"])  # define price in each drug below
+        st.dataframe(order_clean_df)
+
+    drug_result = view_all_drug_data()
+    st.subheader(f"Drug: {drug_result[0][0]}")
+    img_path = os.path.join(os.path.dirname(
+        __file__), 'images/dolo650.jpeg')
+    img = Image.open(img_path)
+    st.image(img, width=100, caption=f"Rs. {fetch_drug_price(drug_result[0][0]):.2f}/-")
+    dolo650 = st.slider(label="Quantity", min_value=0, max_value=5, key=1)
+    st.info(f"When to USE: {drug_result[0][2]}")
+
+    st.subheader(f"Drug: {drug_result[1][0]}")
+    img_path = os.path.join(os.path.dirname(
+        __file__), 'images/strepsils.jpeg')
+    img = Image.open(img_path)
+    st.image(img, width=100, caption=f"Rs. {fetch_drug_price(drug_result[1][0]):.2f}/-")
+    strepsils = st.slider(
+        label="Quantity", min_value=0, max_value=5, key=2)
+    st.info(f"When to USE: {drug_result[1][2]}")
+
+    st.subheader(f"Drug: {drug_result[2][0]}")
+    img_path = os.path.join(os.path.dirname(__file__), 'images/vicks.jpeg')
+    img = Image.open(img_path)
+    st.image(img, width=100, caption=f"Rs. { fetch_drug_price(drug_result[2][0]):.2f}/-")
+    vicks = st.slider(label="Quantity", min_value=0, max_value=5, key=3)
+    st.info(f"When to USE: {drug_result[2][2]}")
+    O_TotalPrice = 0
+    O_id = ""
+    if st.button(label="Buy now"):
+        O_items = ""
+
+        if dolo650 > 0:
+            O_items += "Dolo 650,"
+        if strepsils > 0:
+            O_items += "Strapsils,"
+        if vicks > 0:
+            O_items += "Vicks VaporRub"
+        O_Qty = f"{dolo650},{strepsils},{vicks}"
+
+            # calculates the total price of the order
+        O_TotalPrice = calculate_total_price(O_items, O_Qty)
+
+        st.success(f"Total Price: Rs. {O_TotalPrice:.2f}")
+
+        O_id = f"{username}#O{random.randint(0, 1000000)}"
+        add_order_data(username, O_items,  O_Qty, O_TotalPrice, O_id)
+
+        checkout(username, O_TotalPrice)
+
+    else:
+        st.error("Authentication failed. Please check your username and password.")
+        
+        
+        
+        
+        
+        CUSTOMER 3
+        
+        
+    '''
+def customer(username, password):
+    if authenticate(username, password):
+        st.title("Welcome to Pharmacy Store")
+        st.subheader("Your Order Details")
+        order_result = view_order_data(username)
+
+        with st.expander("View All Order Data"):
+            order_clean_df = pd.DataFrame(order_result, columns=["Name", "Items", "Qty", "ID", "Price"])
+            st.dataframe(order_clean_df)
+
+        # Fetch latest drug data from the database
+        drug_result = view_all_drug_data()
+
+        for drug_info in drug_result:
+            # Extract drug name from the tuple
+            drug_name = drug_info[0]
+            st.session_state.setdefault(drug_name,0)
+            st.subheader(f"Drug: {drug_name}")
+            img_path = os.path.join(os.path.dirname(__file__), f'images/{drug_name}.jpeg')
+            img = Image.open(img_path)
+            price = float(drug_info[5])
+            st.image(img, width=100, caption=f"Rs. {price:.2f}/-")
+            quantity = st.slider(label="Quantity", min_value=0, max_value=5, key=drug_name)
+            st.info(f"When to USE: {drug_info[2]}")
+
+        # Process order
+        if st.button(label="Buy now"):
+            total_price = calculate_total_price(order_items, order_quantity)
+            st.success(f"Total Price: Rs. {total_price:.2f}")
+
+            order_items = ", ".join([f"{info[0]} x{st.session_state[info[0]]}" for info in drug_result if st.session_state[info[0]] > 0])
+            order_quantity = ", ".join([str(st.session_state[info[0]]) for info in drug_result if st.session_state[info[0]] > 0])
+
+            order_id = f"{username}#O{random.randint(0, 1000000)}"
+            add_order_data(username, order_items, order_quantity, total_price, order_id)
+
+            checkout(username, total_price)
+    else:
+        st.error("Authentication failed. Please check your username and password.")
+'''
+
+
+"""
+
+def customer(username, password):
+    if authenticate(username, password):
+        st.title("Welcome to Pharmacy Store")
+        st.subheader("Your Order Details")
+        order_result = view_order_data(username)
+
+    with st.expander("View All Order Data"):
+        order_clean_df = pd.DataFrame(order_result, columns=[ "Name", "Items", "Qty", "ID", "Price"])  # define price in each drug below
+        st.dataframe(order_clean_df)
+
+    drug_result = view_all_drug_data()
+    st.subheader(f"Drug: {drug_result[0][0]}")
+    img_path = os.path.join(os.path.dirname(
+        __file__), 'images/dolo650.jpeg')
+    img = Image.open(img_path)
+    st.image(img, width=100, caption=f"Rs. {fetch_drug_price(drug_result[0][0]):.2f}/-")
+    dolo650 = st.slider(label="Quantity", min_value=0, max_value=5, key=1)
+    st.info(f"When to USE: {drug_result[0][2]}")
+
+    st.subheader(f"Drug: {drug_result[1][0]}")
+    img_path = os.path.join(os.path.dirname(
+        __file__), 'images/strepsils.jpeg')
+    img = Image.open(img_path)
+    st.image(img, width=100, caption=f"Rs. {fetch_drug_price(drug_result[1][0]):.2f}/-")
+    strepsils = st.slider(
+        label="Quantity", min_value=0, max_value=5, key=2)
+    st.info(f"When to USE: {drug_result[1][2]}")
+
+    st.subheader(f"Drug: {drug_result[2][0]}")
+    img_path = os.path.join(os.path.dirname(__file__), 'images/vicks.jpeg')
+    img = Image.open(img_path)
+    st.image(img, width=100, caption=f"Rs. { fetch_drug_price(drug_result[2][0]):.2f}/-")
+    vicks = st.slider(label="Quantity", min_value=0, max_value=5, key=3)
+    st.info(f"When to USE: {drug_result[2][2]}")
+    O_TotalPrice = 0
+    O_id = ""
+    if st.button(label="Buy now"):
+        O_items = ""
+
+        if dolo650 > 0:
+            O_items += "Dolo 650,"
+        if strepsils > 0:
+            O_items += "Strapsils,"
+        if vicks > 0:
+            O_items += "Vicks VaporRub"
+        O_Qty = f"{dolo650},{strepsils},{vicks}"
+
+            # calculates the total price of the order
+        O_TotalPrice = calculate_total_price(O_items, O_Qty)
+
+        st.success(f"Total Price: Rs. {O_TotalPrice:.2f}")
+
+        O_id = f"{username}#O{random.randint(0, 1000000)}"
+        add_order_data(username, O_items,  O_Qty, O_TotalPrice, O_id)
+
+        checkout(username, O_TotalPrice)
+
+    else:
+        st.error("Authentication failed. Please check your username and password.")
+"""

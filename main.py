@@ -8,18 +8,20 @@ from modules.authentication import (
     send_purchase_confirmation_email,
     retrive_password,
     forgot_password,
-    retrieve_username
+    retrieve_username,
 )
+
 import os
 import random
+import requests
 from PIL import Image
 import streamlit as st
 import stripe
-from streamlit.components.v1 import components
 import sqlite3
-from modules.email import send_welcome_email
 from modules.email import send_welcome_email, send_purchase_confirmation_email
-from modules.authentication import retrieve_customer_email
+from modules.stripe import (
+    checkout
+)
 from modules.email import send_email_notification
 from modules.trends import visualize_sales_trends
 import pandas as pd
@@ -37,9 +39,22 @@ from modules.database import(
     fetch_drug_price,
     view_order_data,
     add_order_data,
+    calculate_total_price,
+    update_drug,
+    delete_drug,
+    view_all_order_data
 )
+
 from streamlit import selectbox
 from st_paywall import add_auth
+from streamlit_lottie import st_lottie
+
+
+
+stripe.api_key = "sk_test_51OubhsSAkfFPs5lWOLSJwE6IE7gBhEgGQNkiSPWAP7NQr3JotPH3iXJEmQ0ojXfBUdnLpFD5qEo7xI74IV3cKfES00QXSQYpoM"
+#stripe.SetupIntent.create(usage="on_session")
+payment_url = "https://buy.stripe.com/test_3cs8xIc0S4Kk9I47ss"
+
 
 
 
@@ -76,7 +91,7 @@ def admin():
                 else:
                     image_path = None
 
-                add_drug_data(drug_name, drug_expiry, drug_mainuse,  drug_quantity, drug_id, drug_price, image_path)
+                add_drug_data(drug_name, drug_expiry, drug_mainuse, drug_quantity, drug_price, drug_id, image_path)
                 st.success("Successfully Added Data")
 
         if choice == "View":
@@ -84,7 +99,7 @@ def admin():
             drug_result = view_all_drug_data()
             with st.expander("View All Drug Data"):
                 drug_clean_df = pd.DataFrame(
-                    drug_result, columns=["Name", "Expiry_Date", "Use", "Quantity", "ID", "Price"])
+                    drug_result, columns=["Name", "Expiry_Date", "Use", "Quantity", "Price", "ID", "Image"])
                 st.dataframe(drug_clean_df)
 
             with st.expander("View Drug Quantity"):
@@ -143,11 +158,7 @@ def admin():
 
 
 
-
-
-
-
-
+# Modify the function to fetch latest drug data from the database
 def customer(username, password):
     if authenticate(username, password):
         st.title("Welcome to Pharmacy Store")
@@ -155,66 +166,51 @@ def customer(username, password):
         order_result = view_order_data(username)
 
         with st.expander("View All Order Data"):
-            order_clean_df = pd.DataFrame(order_result, columns=[ "Name", "Items", "Qty", "ID", "Price"])  # define price in each drug below
+            order_clean_df = pd.DataFrame(order_result, columns=["Name", "Items", "Qty", "ID", "Price"])
             st.dataframe(order_clean_df)
 
+        # Fetch latest drug data from the database
         drug_result = view_all_drug_data()
-        st.subheader(f"Drug: {drug_result[0][0]}")
-        img_path = os.path.join(os.path.dirname(
-            __file__), 'images/dolo650.jpeg')
-        img = Image.open(img_path)
-        st.image(img, width=100, caption=f"Rs. {fetch_drug_price(drug_result[0][0]):.2f}/-")
-        dolo650 = st.slider(label="Quantity", min_value=0, max_value=5, key=1)
-        st.info(f"When to USE: {drug_result[0][2]}")
+        for drug_info in drug_result:
+            # Extract drug name from the tuple
+            drug_name = drug_info[0]
+            st.subheader(f"Drug: {drug_name}")
+            img_path = os.path.join(os.path.dirname(__file__), f'images/{drug_name}.jpeg')
+            img = Image.open(img_path)
+            price = float(drug_info[5])
+            st.image(img, width=100, caption=f"Rs. {price:.2f}/-")
+            quantity = st.slider(label="Quantity", min_value=0, max_value=5, key=drug_name)
+            st.info(f"When to USE: {drug_info[2]}")
 
-        st.subheader(f"Drug: {drug_result[1][0]}")
-        img_path = os.path.join(os.path.dirname(
-            __file__), 'images/strepsils.jpeg')
-        img = Image.open(img_path)
-        st.image(img, width=100, caption=f"Rs. {fetch_drug_price(drug_result[1][0]):.2f}/-")
-        strepsils = st.slider(
-            label="Quantity", min_value=0, max_value=5, key=2)
-        st.info(f"When to USE: {drug_result[1][2]}")
-
-        st.subheader(f"Drug: {drug_result[2][0]}")
-        img_path = os.path.join(os.path.dirname(__file__), 'images/vicks.jpeg')
-        img = Image.open(img_path)
-        st.image(img, width=100, caption=f"Rs. { fetch_drug_price(drug_result[2][0]):.2f}/-")
-        vicks = st.slider(label="Quantity", min_value=0, max_value=5, key=3)
-        st.info(f"When to USE: {drug_result[2][2]}")
-        O_TotalPrice = 0
-        O_id = ""
+        # Process order
         if st.button(label="Buy now"):
-            O_items = ""
+            total_price = calculate_total_price(drug_result, username)
+            st.success(f"Total Price: Rs. {total_price:.2f}")
 
-            if dolo650 > 0:
-                O_items += "Dolo 650,"
-            if strepsils > 0:
-                O_items += "Strapsils,"
-            if vicks > 0:
-                O_items += "Vicks VaporRub"
-            O_Qty = f"{dolo650},{strepsils},{vicks}"
+            order_items = ", ".join([f"{info[0]} x{st.session_state[info[0]]}" for info in drug_result if st.session_state[info[0]] > 0])
+            order_quantity = ", ".join([str(st.session_state[info[0]]) for info in drug_result if st.session_state[info[0]] > 0])
 
-            # calculates the total price of the order
-            O_TotalPrice = calculate_total_price(O_items, O_Qty)
+            order_id = f"{username}#O{random.randint(0, 1000000)}"
+            add_order_data(username, order_items, order_quantity, total_price, order_id)
 
-            st.success(f"Total Price: Rs. {O_TotalPrice:.2f}")
-
-            O_id = f"{username}#O{random.randint(0, 1000000)}"
-            add_order_data(username, O_items,  O_Qty, O_TotalPrice, O_id)
-
-            checkout(username, O_TotalPrice)
-
-
+            checkout(username, total_price)
     else:
         st.error("Authentication failed. Please check your username and password.")
 
+
+
+
+url = 'https://lottie.host/2b89cf80-72e9-42ec-95e6-97ffd72bba14/UX6EOmiR3Q.json'
+success_tick_url = "https://lottie.host/353e41f1-6210-4d77-921d-74123030d22a/yYxAX857tH.json"
+animation_played = False
+
+def play_animation(url):
+    st_lottie(url, width=400, height=400, speed=2, key='animation')
 
 if __name__ == '__main__':
     create_drug_table()
     create_customer_table()
     create_order_table()
-
 
     menu = ["Login", "SignUp", "Admin", "About","Sales Trends"]
     choice = st.sidebar.selectbox("Menu", menu)
@@ -224,7 +220,6 @@ if __name__ == '__main__':
         password = st.sidebar.text_input("Password", type='password')
         if st.sidebar.checkbox(label="Login"):
             customer(username, password)
-
     if choice == "Login" and st.sidebar.button("Retrieve Password"):
         username = st.text_input("Enter your User Name")
         password = retrive_password(username)
@@ -264,8 +259,8 @@ if __name__ == '__main__':
             else:
                 st.warning('Password doesn\'t match')
 
-        add_auth(True)
-        st.error("You need to login to access this page")
+        #add_auth(True)
+        #st.error("You need to login to access this page")
 
     elif choice == "About":
         st.subheader("Python Project")
@@ -283,8 +278,21 @@ if __name__ == '__main__':
         visualize_sales_trends()
 
 
+#page_bg_img = """
+#<style>
+#[data-testid="stAppViewContainer"] {
+#background-color: #000000;
+#opacity: 1;
+#background-image:  linear-gradient(#47e2d5 0.4px, transparent 0.4px), linear-gradient(to right, #47e2d5 0.4px, #000000 0.4px);
+#background-size: 8px 8px;
+#}
 
-
-
-
-# demo commnet
+#[data-testid="stSidebar"] {
+#background-color: #000000;
+#opacity: 1;
+#background-image:  linear-gradient(#47e2d5 0.4px, transparent 0.4px), linear-gradient(to right, #47e2d5 0.4px, #000000 0.4px);
+#background-size: 8px 8px;
+#}
+#</style>
+#"""
+##st.markdown(page_bg_img, unsafe_allow_html=True)

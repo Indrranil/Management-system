@@ -1,10 +1,9 @@
-from modules.authenticate import 
+from modules.email import send_email_notification
+from modules.authentication import retrieve_customer_email, fetch_order_details
 import stripe 
 import streamlit as st
 import webbrowser
 from streamlit.components.v1 import components
-
-
 
 stripe.api_key = "sk_test_51OubhsSAkfFPs5lWOLSJwE6IE7gBhEgGQNkiSPWAP7NQr3JotPH3iXJEmQ0ojXfBUdnLpFD5qEo7xI74IV3cKfES00QXSQYpoM"
 #stripe.SetupIntent.create(usage="on_session")
@@ -33,9 +32,3 @@ def checkout(username, O_TotalPrice):
                 send_email_notification(customer_email, subject, message_body)
     except Exception as e:
         st.error(f"Error processing purchase and sending email: {e}")
-
-    try:
-        # Redirect the user to the payment page in the default web browser
-        webbrowser.open_new_tab(payment_url)
-    except Exception as e:
-        st.error(f"Error redirecting to payment page: {e}")

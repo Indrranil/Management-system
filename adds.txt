@@ -1,7 +1,7 @@
-1. new ui for the current streamlit app 
-2. Google signin -> redirect back to app  
-3. Checkout Email
-4. Sales trend graph -> change lib or add new struct
-5. check for api creattion -> app can be scrapped | data about durgs and sales
-shared
-6. fix upload image ->> possible soln add cors headers
+1. quantity 0 rs.0
+    if qty < order placed generate an error 
+2. Google Sign in
+3. fix retrieve pass and username
+4. stats, plotly appearing on all pages 
+5. username and password restrictions, like 8 chars min 
+6. add github link to the 'ABOUT'

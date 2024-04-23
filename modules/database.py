@@ -2,7 +2,8 @@ import sqlite3
 from modules.email import send_welcome_email
 import pandas as pd
 from modules.trends import visualize_sales_trends
-
+import streamlit as st
+#from main import customer
 
 
 conn = sqlite3.connect("drug_data.db", check_same_thread=False)
@@ -44,7 +45,6 @@ def add_customer_data(Cname, Cpass, Cemail, Cstate, Cnumber):
         st.error(f"Error inserting data into the database: {e}")
 
     conn.commit()
-    send_welcome_email(Cemail)
 
 
 def view_all_customer_data():
@@ -117,23 +117,33 @@ def delete_order(Oid):
     conn.commit()
 
 
+
 def fetch_drug_price(drug_name):
-    # Add this line to check the drug name
-    print("Fetching price for drug:", drug_name)
-    result = c.execute(
-        'SELECT D_Price FROM Drugs WHERE D_Name = ?',
-        (drug_name,)
-    ).fetchone()
-    # Add this line to check the result from the database
-    print("Result from database:", result)
-    return result[0] if result else 0.00
+    try:
+        # Add this line to check the drug name
+        print("Fetching price for drug:", drug_name)
+        result = c.execute(
+            'SELECT D_Price FROM Drugs WHERE D_Name = ?',
+            (drug_name,)
+        ).fetchone()
+        # Add this line to check the result from the database
+        print("Result from database:", result)
+        return result[0] if result else 0.00
+    except Exception as e:
+        print("Error fetching price:", e)
+        return 0.00
 
 
-def calculate_total_price(items, quantities):
-    item_list = items.split(',')
-    qty_list = quantities.split(',')
-    prices = [fetch_drug_price(item) for item in item_list]
-    total_price = sum([float(price) * int(qty) for price, qty in zip(prices, qty_list)])
+
+
+
+def calculate_total_price(drug_result, username):
+    total_price = 0
+    for drug_info in drug_result:
+        drug_name = drug_info[0]
+        quantity = st.session_state.get(drug_name, 0)  # Retrieve quantity from session state
+        price = float(drug_info[5])
+        total_price += quantity * price
     return total_price
 
 
