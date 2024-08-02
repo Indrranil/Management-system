@@ -11,6 +11,7 @@ from modules.authentication import (
     retrieve_username
 )
 import os
+import re
 import random
 from PIL import Image
 import streamlit as st
@@ -210,6 +211,11 @@ def customer(username, password):
         st.error("Authentication failed. Please check your username and password.")
 
 
+def is_valid_email(email):
+    regex = r'^\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    return re.match(regex, email)
+
+
 if __name__ == '__main__':
     create_drug_table()
     create_customer_table()
@@ -225,23 +231,24 @@ if __name__ == '__main__':
         if st.sidebar.checkbox(label="Login"):
             customer(username, password)
 
-    if choice == "Login" and st.sidebar.button("Retrieve Password"):
-        username = st.text_input("Enter your User Name")
-        password = retrive_password(username)
-        if password:
-            st.success(f"Your password is {password}")
-        else:
-            st.error("No such user exists in the database. Please check the username and try again.")
+        if choice == "Login" and st.sidebar.button("Retrieve Password"):
+            username = st.text_input("Enter your User Name")
+            password = retrive_password(username)
+            if password:
+                st.success(f"Your password is {password}")
+            else:
+                st.error("No such user exists in the database. Please check the username and try again.")
 
-    if choice == "Login" and st.sidebar.button("Retrieve Username"):
-        email = st.text_input("Enter your email address")
-        username = retrieve_username(email)
-        if username:
-            st.success(f"Your username is {username}")
-        else:
-            st.error("No user found with this email address.")
+        if choice == "Login" and st.sidebar.button("Retrieve Username"):
+            email = st.text_input("Enter your email address")
+            username = retrieve_username(email)
+            if username:
+                st.success(f"Your username is {username}")
+            else:
+                st.error("No user found with this email address.")
+    st.title("Pharmacy Management System")
 
-    elif choice == "SignUp":
+    if choice == "SignUp":
         st.subheader("Create New Account")
         cust_name = st.text_input("Name")
         cust_password = st.text_input("Password", type='password', key=1000)
@@ -251,34 +258,40 @@ if __name__ == '__main__':
         col1, col2, col3 = st.columns(3)
         with col1:
             cust_email = st.text_area("Email ID")
+            if cust_email and not is_valid_email(cust_email):
+                st.error("Please enter a valid Email address")
         with col2:
             cust_area = st.text_area("State")
         with col3:
             cust_number = st.text_area("Phone Number")
 
         if st.button("Signup"):
-            if cust_password == cust_password1:
+            if cust_password != cust_password1:
+                st.error("password does not match")
+            elif not is_valid_email(cust_email):
+                st.error("Please enter a valid email")
+
+            else:
                 add_customer_data(cust_name, cust_password, cust_email, cust_area, cust_number)
                 st.success("Account Created!")
                 st.info("Go to Login Menu to login")
-            else:
-                st.warning('Password doesn\'t match')
+
 
         add_auth(True)
         st.error("You need to login to access this page")
 
-    elif choice == "About":
+    if choice == "About":
         st.subheader("Python Project")
         st.subheader("By Indrranil")
 
-    elif choice == "Admin":
+    if choice == "Admin":
         username = st.sidebar.text_input("User Name")
         password = st.sidebar.text_input("Password", type='password')
         if username == 'admin' and password == 'admin':
             admin()
             visualize_sales_trends()
 
-    elif choice == "Sales Trends":
+    if choice == "Sales Trends":
         st.subheader("Sales Trends")
         visualize_sales_trends()
 

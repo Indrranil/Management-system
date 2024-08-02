@@ -1,6 +1,7 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import streamlit as st
 
 def send_email_notification(recipient, subject, message):
     sender_email = "indrranil7@gmail.com"

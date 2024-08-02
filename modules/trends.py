@@ -1,7 +1,15 @@
+import sqlite3
 import plotly.express as px
+import streamlit as st
+
+
+
 def fetch_sales_data():
     # Assuming you have a Sales table with columns Date and TotalPrice
+    conn = sqlite3.connect("drug_data.db", check_same_thread=False)
+    c = conn.cursor()
     sales_data = c.execute("SELECT Date, TotalPrice FROM Sales").fetchall()
+    conn.close
     return sales_data
 
 # Add this function to your project to visualize sales trends
@@ -16,11 +24,11 @@ def visualize_sales_trends():
     total_prices = [row[1] for row in sales_data]
 
     # Create a Plotly figure using Plotly Express
-    fig = px.line(x=dates, y=total_prices, title='Sales Trends', labels={'x': 'Date', 'y': 'Total Sales'})
+    fig = px.bar(x=dates, y=total_prices, title='Sales Trends', labels={'x': 'Date', 'y': 'Total Sales'})
 
-    fig.update_traces(line=dict(color='yellow'))
+    fig.update_traces(marker=dict(color='yellow'))
 
-    # Customize the figure layout to only display x-axis and y-axis
+    # Customize the figure layout
     fig.update_layout(
         xaxis=dict(
             title='Date',
