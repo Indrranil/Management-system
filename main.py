@@ -220,6 +220,7 @@ if __name__ == '__main__':
         password = st.sidebar.text_input("Password", type='password')
         if st.sidebar.checkbox(label="Login"):
             customer(username, password)
+            
     if choice == "Login" and st.sidebar.button("Retrieve Password"):
         username = st.text_input("Enter your User Name")
         password = retrive_password(username)
